@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS `_DB_PREFIX_hrx_order` (
+    `id` int(10) unsigned NOT NULL,
+    `id_shop` int(10) NOT NULL,
+    `id_hrx` varchar(36),
+    `pickup_location_id` varchar(36) NOT NULL,
+    `terminal` varchar(255),
+    `delivery_location_id` varchar(36) NOT NULL,
+    `length` float(10) NOT NULL,
+    `width` float(10) NOT NULL,
+    `height` float(10) NOT NULL,
+    `weight` float(10) NOT NULL,
+    `tracking_number` varchar(15),
+    `tracking_url` varchar(100),
+    `status` int(10) NOT NULL,
+    `status_code` varchar(15) NOT NULL,
+    `date_add` datetime NOT NULL,
+    `date_upd` datetime NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `id_shop` (`id_shop`)
+) ENGINE=_MYSQL_ENGINE_ DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

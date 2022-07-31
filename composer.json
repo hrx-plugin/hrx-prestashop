@@ -1,0 +1,11 @@
+{
+  "require": {
+       "hrx/api-lib": "dev-main"
+   },
+   "repositories": [
+       {
+           "type": "vcs",
+           "url": "https://github.com/mijora/hrx-api"
+       }
+   ]
+}

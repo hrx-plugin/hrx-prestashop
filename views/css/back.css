@@ -1,0 +1,244 @@
+/**
+* 2007-2022 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author    PrestaShop SA <contact@prestashop.com>
+*  @copyright 2007-2022 PrestaShop SA
+*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*
+* Don't forget to prefix your containers with your own identifier
+* to avoid any conflicts with others containers.
+*/
+.form-group.delivery-settings{
+    display: flex;
+    align-items: center;
+}
+.dimensions-wrapper{
+    display: flex;
+    flex-wrap: wrap;
+    grid-gap: 5px;
+    justify-content: space-between;
+}
+.bootstrap .form-horizontal .dimensions-wrapper .form-group{
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px;
+}
+.bootstrap.modal .dimensions-wrapper .form-group{
+    margin-left: 0;
+    margin-right: 0;
+}
+.bootstrap .form-horizontal .dimensions-wrapper .form-group.weight{
+    margin-left: 44px;
+    margin-right: 0;
+}
+.bootstrap .form-horizontal .dimensions-wrapper .control-label{
+    text-align: left;
+    font-size: 11px;
+}
+.dimension-group{
+    padding-bottom: 20px;
+    text-align: right;
+}
+.dimension{
+    position: relative;
+}
+.bootstrap .dimension input[type="text"]{
+    width: 142px;
+    padding-right: 39px;
+}
+.bootstrap.modal .dimension input[type="text"]{
+    width: 136px;
+}
+#content.bootstrap .dimensions-wrapper .help-block{
+    position: absolute;
+    bottom: -15px;
+}
+.unit{
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 39px;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 11px;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    background: #EFF2F3;
+    border: 1px solid #BBCDD2;
+    border-radius: 0px 4px 4px 0px;    
+}
+/* #hrx-delivery is shipment card in order page*/
+#hrx-delivery .card-header-title, #hrx-delivery .tracking-number{
+    display: flex;
+    align-items: center;
+    grid-gap: 14px;
+}
+#hrx-delivery .tracking-number{
+    justify-content: right;
+}
+#hrx-delivery .tracking-number a{
+    background: #E82C2A;
+    border-radius: 30px;
+    padding: 6px 16px;
+    color: #FFFFFF;
+}
+#hrx-delivery .dimension input{
+    width: 134px;
+    padding: 8px 39px 8px 10px;
+}
+#hrx-delivery .dimension-group{
+    padding: 0;
+    margin: 0;
+}
+#hrx-delivery .dimensions-wrapper .control-label{
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+#hrx-delivery .dimensions-wrapper .form-group{
+    margin: 0;
+}
+#hrx-delivery .response ol{
+    margin: 0;
+}
+#hrx-delivery .cancel-order{
+    float: left;
+}
+#hrx-modal .modal-header{
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+}
+#hrx-modal .close{
+    float: unset;
+    font-size: 26px;
+}
+.id_order_1{
+    display: flex;
+    flex-direction: row-reverse;
+    grid-gap: 10px;
+}
+.table.hrx_order thead tr{
+    position: relative
+}
+.table.hrx_order thead tr th:last-child{
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+.bootstrap .table.hrx_order .btn{
+    width: max-content;
+}
+.bootstrap .table .create-order .btn-group a.btn, .bootstrap .table .make-order-ready .btn-group a.btn{
+    border-color: #C6E6CA;
+    color: #72C279;
+    width: max-content;
+}
+.bootstrap .table .create-order .btn-group a.btn:hover, .bootstrap .table .create-order .btn-group a.btn:focus, 
+.bootstrap .table .make-order-ready .btn-group a.btn:focus, .bootstrap .table .make-order-ready .btn-group a.btn:hover{
+    background-color: #C6E6CA;
+}
+.bootstrap .table .cancel-order .btn-group a.btn{
+    border-color: #F6C4C4;
+    color: #E00000;
+}
+.bootstrap .table .cancel-order .btn-group a.btn:hover, .bootstrap .table .cancel-order .btn-group a.btn:focus{
+    background-color: #F6C4C4;
+}
+.bootstrap .table.hrx_order  .label.color_field{
+    min-width: 145px;
+    display: block;
+    margin: auto;
+    border-radius: 4px;
+    max-width: fit-content;
+    padding: 5px;
+}
+.bootstrap .table.hrx_order .btn-group button, .bootstrap .table.hrx_order  .btn-group a{
+    min-width: 131px;
+    justify-content: space-between;
+}
+.bootstrap #table-hrx_order .btn-group-action .btn-group>a:first-child{
+    margin: 0;
+    justify-content: center;
+}
+.bootstrap #table-hrx_order.table .btn-group.print-btn button.btn, .bootstrap .table.hrx_order .print-shipment-btn a{
+    background-color: #FFFFFF;
+    border-color: #F1B746 !important;
+    color: #F1B746;
+    box-shadow: none
+}
+.bootstrap #table-hrx_order.table .print-shipment-btn a{
+    justify-content: center;
+}
+.bootstrap #table-hrx_order.table .btn-group.print-btn button.btn:focus{
+    background-color: #F1B746;
+    border-color: #F1B746 !important;
+    box-shadow: none;
+    color: #FFFFFF;
+}
+.bootstrap .table.hrx_order .btn-group.print-btn button.btn:hover, .bootstrap .table.hrx_order .print-shipment-btn a:hover{
+    background-color: #F1B746;
+    color: #FFFFFF;
+}
+
+.loader {
+    margin-left: 10px;
+    display: none;
+    border: 5px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 5px solid #3498db;
+    width: 30px;
+    height: 30px;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.btn-update-wrapper{
+    display: flex;
+    margin-bottom: 5px;
+}
+.bootstrap .table .btn-group.print-btn a{
+    display: block;
+    text-decoration: none;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    color: #000000;
+}
+.bootstrap .table .btn-group.print-btn a:hover{
+    background-color: #F1B746;
+    color: #FFFFFF;
+}
+#content.bootstrap .hrx .panel-heading{
+    height: unset;
+    padding: 5px;
+}

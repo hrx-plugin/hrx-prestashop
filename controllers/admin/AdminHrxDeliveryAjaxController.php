@@ -218,15 +218,9 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 $file_name = $response['file_name'] ?? $default_file_name;
                 $file_path =  _PS_MODULE_DIR_ . $label_directory . $file_name;
                 //$data = base64_encode($file_content);
-                $res = file_put_contents($file_path, base64_decode($file_content));
-                if($res)
-                {
-                    $result['success'][] = 'Order shipping label generated successfully';
-                    $result['data']['url'] = _PS_BASE_URL_ . '/modules/' . $label_directory . $file_name;
-                }
-                else{
-                    $result['errors'] = "Can not create pdf file";
-                }
+                file_put_contents($file_path, base64_decode($file_content));
+                $result['success'][] = 'Order shipping label generated successfully';
+                $result['data']['url'] = _PS_BASE_URL_ . '/modules/' . $label_directory . $file_name;
             }
         }
 

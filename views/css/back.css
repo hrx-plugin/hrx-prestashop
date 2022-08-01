@@ -119,9 +119,6 @@
 #hrx-delivery .response ol{
     margin: 0;
 }
-#hrx-delivery .cancel-order{
-    float: left;
-}
 #hrx-modal .modal-header{
     display: flex;
     flex-direction: row-reverse;
@@ -132,10 +129,38 @@
     float: unset;
     font-size: 26px;
 }
-.id_order_1{
+.hrx-action-wrapper{
     display: flex;
-    flex-direction: row-reverse;
     grid-gap: 10px;
+    justify-content: flex-end;
+}
+.hrx-action-wrapper .cancel-order{
+    margin-right: auto;
+}
+.bootstrap .hrx-action-wrapper .btn-success{
+    color: #72C279;
+    background-color: #FFFFFF;
+    border-color: #C6E6CA;
+}
+.bootstrap .hrx-action-wrapper .btn-success:hover{
+    background-color: #72C279;
+    color: #FFFFFF;
+}
+.bootstrap .hrx-action-wrapper .btn-warning, .bootstrap .table.hrx_order .print-btn .btn{
+    color: #F1B746;
+    background-color: #FFFFFF;
+    border-color: #F1B746;
+}
+.bootstrap .print-btn .dropdown-menu>li>a{
+    display: block;
+    color: #000;
+    padding: 5px;
+}
+.bootstrap .hrx-action-wrapper .btn-warning:hover, .bootstrap .table.hrx_order .print-btn .btn:hover,
+ .bootstrap .print-btn .dropdown-menu>li>a:hover{
+    background-color: #F1B746;
+    color: #FFFFFF;
+    text-decoration: none;
 }
 .table.hrx_order thead tr{
     position: relative
@@ -149,22 +174,6 @@
 .bootstrap .table.hrx_order .btn{
     width: max-content;
 }
-.bootstrap .table .create-order .btn-group a.btn, .bootstrap .table .make-order-ready .btn-group a.btn{
-    border-color: #C6E6CA;
-    color: #72C279;
-    width: max-content;
-}
-.bootstrap .table .create-order .btn-group a.btn:hover, .bootstrap .table .create-order .btn-group a.btn:focus, 
-.bootstrap .table .make-order-ready .btn-group a.btn:focus, .bootstrap .table .make-order-ready .btn-group a.btn:hover{
-    background-color: #C6E6CA;
-}
-.bootstrap .table .cancel-order .btn-group a.btn{
-    border-color: #F6C4C4;
-    color: #E00000;
-}
-.bootstrap .table .cancel-order .btn-group a.btn:hover, .bootstrap .table .cancel-order .btn-group a.btn:focus{
-    background-color: #F6C4C4;
-}
 .bootstrap .table.hrx_order  .label.color_field{
     min-width: 145px;
     display: block;
@@ -173,34 +182,14 @@
     max-width: fit-content;
     padding: 5px;
 }
-.bootstrap .table.hrx_order .btn-group button, .bootstrap .table.hrx_order  .btn-group a{
+.bootstrap .table.hrx_order .print-btn .btn{
+    display: flex;
+    align-items: center;
+}
+.bootstrap .table.hrx_order a.btn, .bootstrap .table.hrx_order .print-btn .btn{
     min-width: 131px;
     justify-content: space-between;
 }
-.bootstrap #table-hrx_order .btn-group-action .btn-group>a:first-child{
-    margin: 0;
-    justify-content: center;
-}
-.bootstrap #table-hrx_order.table .btn-group.print-btn button.btn, .bootstrap .table.hrx_order .print-shipment-btn a{
-    background-color: #FFFFFF;
-    border-color: #F1B746 !important;
-    color: #F1B746;
-    box-shadow: none
-}
-.bootstrap #table-hrx_order.table .print-shipment-btn a{
-    justify-content: center;
-}
-.bootstrap #table-hrx_order.table .btn-group.print-btn button.btn:focus{
-    background-color: #F1B746;
-    border-color: #F1B746 !important;
-    box-shadow: none;
-    color: #FFFFFF;
-}
-.bootstrap .table.hrx_order .btn-group.print-btn button.btn:hover, .bootstrap .table.hrx_order .print-shipment-btn a:hover{
-    background-color: #F1B746;
-    color: #FFFFFF;
-}
-
 .loader {
     margin-left: 10px;
     display: none;
@@ -226,17 +215,6 @@
 .btn-update-wrapper{
     display: flex;
     margin-bottom: 5px;
-}
-.bootstrap .table .btn-group.print-btn a{
-    display: block;
-    text-decoration: none;
-    width: 100%;
-    padding: 0.5rem 1rem;
-    color: #000000;
-}
-.bootstrap .table .btn-group.print-btn a:hover{
-    background-color: #F1B746;
-    color: #FFFFFF;
 }
 #content.bootstrap .hrx .panel-heading{
     height: unset;

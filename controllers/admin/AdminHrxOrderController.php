@@ -13,8 +13,8 @@ class AdminHrxOrderController extends ModuleAdminController
         $this->table = 'hrx_order';
         $this->identifier = 'id';
 
-        $this->_select = ' CONCAT(c.firstname, " ", c.lastname) as customer_name,
-                            osl.name AS order_state, s.name as shop_name, osl.name as osname, os.color,
+        $this->_select = ' CONCAT(c.firstname, " ", c.lastname) AS customer_name,
+                            osl.name AS order_state, s.name AS shop_name, osl.name AS osname, os.color,
                             w.name as warehouse, a.id AS id_order_1';
 
         $this->_join = '
@@ -65,6 +65,7 @@ class AdminHrxOrderController extends ModuleAdminController
                 'title' => $this->module->l('Customer'),
                 'type' => 'text',
                 'align' => 'center',
+                'havingFilter' => true,
             ),
             'tracking_number' => array(
                 'type' => 'text',
@@ -81,7 +82,8 @@ class AdminHrxOrderController extends ModuleAdminController
                 'type' => 'text',
                 'title' => $this->module->l('Warehouse'),
                 'align' => 'center',
-                'class' => 'column-warehouse'
+                'class' => 'column-warehouse',
+                'havingFilter' => true,
             ),  
         );
 

@@ -72,18 +72,6 @@
                 </div>
             </div>
 
-            {* <!-- change price table -->
-            <div class="form-group">
-                <label class="control-label {if $version17}col-lg-4{else}col-lg-3{/if}">{l s="Change price table" mod="hrxdelivery"}</label>
-                <div class="col-lg-8">
-                    <div class="btn-update-wrapper">
-                        <button type="button" id="configuration_form_change_price_table" class="btn btn-primary">
-                            {l s="Change price table" mod="hrxdelivery"}
-                        </button>
-                    </div>
-                </div>
-            </div> *}
-
             <!-- price table -->
             <div class="form-group">
                 <label class="control-label {if $version17}col-lg-4{else}col-lg-3{/if}">{l s="Shipping price table"}</label>

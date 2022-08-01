@@ -1085,12 +1085,10 @@ class HrxDelivery extends CarrierModule
                     'value' => $hrxOrder->weight,
                     'unit' => 'kg'
                 );
-
                 
-
                 $require_return_label = Configuration::get(self::$_configKeys['ADVANCED']['return_label']);
 
-                $action_buttons = $this->getActionButtons($id_order, true);
+                $action_buttons = $this->getActionButtons($id_order, false);
 
                 $this->context->smarty->assign([
                     'image' => __PS_BASE_URI__ . 'modules/' . $this->name .'/logo.png',

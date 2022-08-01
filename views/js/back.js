@@ -108,7 +108,7 @@ $(document).ready(function() {
                 } else {
                     $('#configuration_form_3').unbind('submit').submit(); // continue the submit unbind preventDefault
                 }
-            },
+            }
         });
          
     });

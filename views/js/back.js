@@ -77,8 +77,10 @@ $(document).ready(function() {
     });
 
     //update price table
-    $(document).on('click', '#configuration_form_submit_btn_3', function(e){
-        e.preventDefault();
+    $('#configuration_form_3').submit(function(event) {
+
+        event.preventDefault(); //this will prevent the default submit
+       
         var table = {};
         
         var rows = $('#shipping-price-table').find('tbody tr');
@@ -94,27 +96,25 @@ $(document).ready(function() {
             });
             table[country] = data;
         });
-        updatePriceTable(table);
+        
+        $.ajax({
+            type: "POST",
+            url: hrxdelivery_update_price_table,
+            dataType: "json",
+            data: {'data' : table},
+            success: function (res) {
+                if (typeof res.errors != 'undefined') {
+                    showTableResponse(res.errors, 'danger');
+                } else {
+                    $('#configuration_form_3').unbind('submit').submit(); // continue the submit unbind preventDefault
+                }
+            },
+        });
+         
     });
 
 });
 
-function updatePriceTable(table_data)
-{
-    $.ajax({
-        type: "POST",
-        url: hrxdelivery_update_price_table,
-        dataType: "json",
-        data: {'data' : table_data},
-        success: function (res) {
-            if (typeof res.errors != 'undefined') {
-                showTableResponse(res.errors, 'danger');
-            } else {
-                showTableResponse(res.success, 'success');
-            }
-        },
-    });
-}
 
 function printLabel(id_order, type)
 {

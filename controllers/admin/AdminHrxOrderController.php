@@ -96,20 +96,6 @@ class AdminHrxOrderController extends ModuleAdminController
             'class' => 'id_order_1'
         );
 
-        $this->bulk_actions = array(
-            'printShipmentLabels' => array(
-                'text' => $this->module->l('Print shipment label'),
-                'icon' => 'icon-print'
-            ),
-            'printReturnLabels' => array(
-                'text' => $this->module->l('Print return label'),
-                'icon' => 'icon-print'
-            ),
-            'makeOrdersReady' => array(
-                'text' => $this->module->l('Mark as ready'),
-                'icon' => 'icon-save'
-            )
-        );
     }
 
     public function EditOrderBtn($id_order)
@@ -133,86 +119,5 @@ class AdminHrxOrderController extends ModuleAdminController
             'hrxdelivery_cancel_order_url' => $this->context->link->getAdminLink(HrxDelivery::CONTROLLER_ADMIN_AJAX) . '&action=cancelOrder',
             'hrxdelivery_update_ready_state' => $this->context->link->getAdminLink(HrxDelivery::CONTROLLER_ADMIN_AJAX) . '&action=updateReadyState',
         ]);
-    }
-
-    public function postProcess()
-    {
-        parent::postProcess();
-        $result = [];
-
-        if(Tools::isSubmit('submitBulkprintShipmentLabelshrx_order'))
-        {
-            $result = self::printLabels('shipment');
-        }
-
-        if(Tools::isSubmit('submitBulkprintReturnLabelshrx_order'))
-        {
-            $result = self::printLabels('return');
-        }
-
-        if(isset($result['path']) && isset($result['filename']))
-        {
-            self::printPdf($result['path'], $result['filename']);
-        }
-    }
-
-    private static function printLabels($label_type)
-    {
-        $result = [];
-        $orders = Tools::getValue('hrx_orderBox');
-
-        if(!$orders){
-            return [];
-        }
-
-        $order_ids = implode(', ', $orders);
-        $ids = HrxOrder::getHrxIds($order_ids);
-
-        if($ids)
-        {
-            $file_name = $label_type . '_' . $order_ids . '.pdf';
-
-            if($label_type == 'shipment')
-                $label_directory = HrxDelivery::$_labelPdfDir;
-            else {
-                $label_directory = HrxDelivery::$_returnLabelPdfDir;
-            }
-
-            $file_path =  _PS_MODULE_DIR_ . $label_directory . $file_name;
-            file_put_contents($file_path, '');
-
-            foreach($ids as $id)
-            {
-                $response = HrxAPIHelper::getLabel($label_type, $id['id_hrx']);
-
-                if(isset($response['error']))
-                {
-                    $result['errors'] = $response['error'];
-                }
-                else
-                {
-                    $file_content = $response['file_content'] ?? '';
-                    file_put_contents($file_path, base64_decode($file_content), FILE_APPEND);
-                    
-                }
-            }
-            $result['path'] = $file_path;
-            $result['filename'] = $file_name;
-        }
-
-        return $result;
-    }
-
-    private static function printPdf($path, $filename)
-    {
-        // // make sure there is nothing before headers
-        if (ob_get_level()) ob_end_clean();
-        header("Content-Type: application/pdf; name=\" " . $filename . ".pdf");
-        //header("Content-Transfer-Encoding: base64");
-        // disable caching on client and proxies, if the download content vary
-        header("Expires: 0");
-        header("Cache-Control: no-cache, must-revalidate");
-        header("Pragma: no-cache");
-        readfile($path);
     }
 }

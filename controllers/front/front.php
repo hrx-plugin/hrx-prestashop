@@ -12,9 +12,6 @@ class HrxDeliveryFrontModuleFrontController extends ModuleFrontController
                 case 'add':
                     $result = $this->addCartTerminal();
                     break;
-                case 'delete':
-                    $result = $this->deleteCartTerminal();
-                    break;
                 case 'getTerminals':
                     $result = $this->getTerminals();
                     break;
@@ -50,20 +47,6 @@ class HrxDeliveryFrontModuleFrontController extends ModuleFrontController
         return $result;
     }
 
-    public function deleteCartTerminal()
-    {
-        $delivery_location_id = Tools::getValue('terminal_id');
-        $id_cart = $this->context->cart->id;
-
-        $id = HrxCartTerminal::getIdByCart($id_cart);
-        $obj = new HrxCartTerminal($id);
-        if(Validate::isLoadedObject($obj))
-        {
-            $result = $obj->delete();
-        }
-        return $result;
-    }
-
     public function getTerminals()
     {
         $address = new Address($this->context->cart->id_address_delivery);
@@ -74,7 +57,5 @@ class HrxDeliveryFrontModuleFrontController extends ModuleFrontController
         }
 
         return HrxData::getTerminalsByCountry($country_code);
-
     }
-
 }

@@ -220,3 +220,6 @@
     height: unset;
     padding: 5px;
 }
+.disable-me{
+    pointer-events: none;
+}

@@ -2,11 +2,6 @@
 
 class HrxData
 {
-    private static $_warehousesList = [
-        'directory' => 'data',
-        'file_name' => 'warehouses.json',
-    ];
-
     /**
      * File info for terminals list
      */
@@ -14,11 +9,6 @@ class HrxData
         'directory' => 'data',
         'file_name' => 'terminals_%s.json', // %s - for country code
     );
-
-    /**
-     * Periodic time for update files
-     */
-    private static $_updateEvery = 24 * 3600;
 
     public static function updateTerminals($page)
     {
@@ -37,7 +27,7 @@ class HrxData
             
         foreach($result as $terminal)
         {
-            if(isset($terminal['country']))
+            if(isset($terminal['country']) && (int)$terminal['latitude'] != 0 && (int)$terminal['longitude'] != 0)
             {
                 $terminal['coords']['lat'] = $terminal['latitude'];
                 $terminal['coords']['lng'] = $terminal['longitude'];

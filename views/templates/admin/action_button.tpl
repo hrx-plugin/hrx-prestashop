@@ -1,15 +1,14 @@
 <div class="hrx-action-wrapper">
 
     {* cancel order  *}
-    {if isset($is_table) && $is_table == false}
-        {if isset($status) && $status == 'new' || $status == 'ready'}
-            <span class="cancel-order float-left">
-                <a class="btn btn-danger" data-order="{$id_order}">
-                    {l s="Cancel order" mod="hrxdelivery"}
-                </a>
-            </span>
-        {/if}
+    {if isset($status) && $status == 'new' || $status == 'ready'}
+        <span class="cancel-order float-left">
+            <a class="btn btn-danger" data-order="{$id_order}">
+                {l s="Cancel order" mod="hrxdelivery"}
+            </a>
+        </span>
     {/if}
+    
 
     {* create shipment  *}
     {if isset($status) && $status == ''}

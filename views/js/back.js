@@ -152,7 +152,7 @@ function saveHrxOrder()
     form_data.push({'name' : 'ajax', 'value' : 1});
     form_data.push({'name' : 'id_order', 'value' : id_order});
 
-    $('.hrx .response').html('').removeClass('alert-success');
+    $('#hrxdelivery_save_cart_info_bt').addClass('disable-me');
 
     $.ajax({
         type: "POST",
@@ -174,6 +174,7 @@ function saveHrxOrder()
                     row.find('.column-warehouse').html(res.data['warehouse']);
                 }
             }
+            $('#hrxdelivery_save_cart_info_bt').removeClass('disable-me');
         },
     });
 }
@@ -288,7 +289,7 @@ function createOrder(id_order)
     form_data.push({'name' : 'ajax', 'value' : 1});
     form_data.push({'name' : 'id_order', 'value' : id_order});
 
-    $('.hrx .response').html('').removeClass('alert-success');
+    $('.create-order a').addClass('disable-me');
 
     $.ajax({
         type: "POST",
@@ -313,9 +314,12 @@ function createOrder(id_order)
                     row.find('.column-osname').html(res.data['status']);
                     row.find('.column-tracking_number').html(res.data['tracking_number']);
                     row.find('.id_order_1').html(res.actions);
+
+
+                    $('#hrx-order-modal-wrapper .modal-footer').html(res.actions);
                 }
-                
             }
+            $('.create-order a').removeClass('disable-me');
         },
     });
 }
@@ -326,8 +330,8 @@ function updateReadyState(id_order)
     form_data.push({'name' : 'ajax', 'value' : 1});
     form_data.push({'name' : 'id_order', 'value' : id_order});
 
-    $('.hrx .response').html('').removeClass('alert-success');
-
+    $('.make-order-ready a').addClass('disable-me');
+    
     $.ajax({
         type: "POST",
         url: hrxdelivery_update_ready_state,
@@ -353,6 +357,7 @@ function updateReadyState(id_order)
                 }
                 
             }
+            $('.make-order-ready a').removeClass('disable-me');
         },
     });
 }
@@ -363,8 +368,8 @@ function cancelOrder(id_order)
     form_data.push({'name' : 'ajax', 'value' : 1});
     form_data.push({'name' : 'id_order', 'value' : id_order});
 
-    $('.hrx .response').html('').removeClass('alert-success');
-
+    $('.cancel-order a').addClass('disable-me');
+    
     $.ajax({
         type: "POST",
         url: hrxdelivery_cancel_order_url,
@@ -382,7 +387,8 @@ function cancelOrder(id_order)
 
                 row.find('.column-osname').html(res.data['status']);
             }
-        },
+            $('.cancel-order a').removeClass('disable-me');
+        }
     });
 }
 

@@ -38,7 +38,8 @@ $(document).ready(function() {
 $(document).on('click', '.delivery-options input[type=radio]', function()
 {
     var id = parseInt($(this).attr('value'));
-
+    var delivery_option = parseInt(($('.delivery-options input[type=radio]:checked').val()));
+    
     if(id != hrx_carrier_pickup)
     {
         $('button[name="confirmDeliveryOption"').prop('disabled', false);

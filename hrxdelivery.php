@@ -56,9 +56,6 @@ class HrxDelivery extends CarrierModule
         'actionAdminControllerSetMedia',
         'displayAdminListBefore',
         'actionCarrierProcess',
-        'displayAdminOmnivaIntServicesListBefore',
-        'displayAdminOmnivaIntTerminalsListBefore',
-        'displayAdminOmnivaIntCountriesListBefore',
         'displayBeforeCarrier',
         'actionObjectCountryUpdateAfter',
         'backOfficeHeader',
@@ -167,6 +164,13 @@ class HrxDelivery extends CarrierModule
             'id_name' => 'HRX_PICKUP_ID',
             'reference_name' => 'HRX_TERMINAL_ID_REFERENCE',
             'title' => 'HRX parcel terminal',
+            'image' => 'logo.png',
+        ),
+        'courier' => array(
+            'type' => 'courier',
+            'id_name' => 'HRX_COURIER_ID',
+            'reference_name' => 'HRX_COURIER_ID_REFERENCE',
+            'title' => 'HRX courier',
             'image' => 'logo.png',
         ),
     );
@@ -684,7 +688,7 @@ class HrxDelivery extends CarrierModule
         $carrier->shipping_method = 2;
 
         foreach (Language::getLanguages() as $lang)
-            $carrier->delay[$lang['id_lang']] = $this->l('HRX parcel terminal');
+            $carrier->delay[$lang['id_lang']] = $this->l('1-2 business days');
 
         if ($carrier->add() == true)
         {
@@ -1173,12 +1177,20 @@ class HrxDelivery extends CarrierModule
      */
     public function hookDisplayCarrierExtraContent($params)
     {
+        $carrier_id_reference = $params['carrier']['id_reference'];
         
+        $carrier_type = $this->getCarrierType($carrier_id_reference);
+
         $address = new Address($params['cart']->id_address_delivery);
         $country_code = Country::getIsoById($address->id_country);
 
         if (empty($country_code)) {
             return '';
+        }
+
+        if($carrier_type == 'courier')
+        {
+            return;
         }
 
         $terminals = HrxData::getTerminalsByCountry($country_code);
@@ -1200,6 +1212,16 @@ class HrxDelivery extends CarrierModule
         
         return $this->display(__FILE__, 'displayCarrierExtraContent.tpl');
         
+    }
+
+    private function getCarrierType($carrier_id_reference)
+    {
+        foreach(self::$_carriers as $carrier)
+        {
+            if((int)Configuration::get($carrier['reference_name']) == (int) $carrier_id_reference){
+                return $carrier['type'];
+            }
+        }
     }
 
     public function hookDisplayBeforeCarrier($params)

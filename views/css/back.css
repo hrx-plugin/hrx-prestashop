@@ -134,9 +134,9 @@
     grid-gap: 10px;
     justify-content: flex-end;
 }
-.hrx-action-wrapper .cancel-order{
+/* .hrx-action-wrapper .cancel-order{
     margin-right: auto;
-}
+} */
 .bootstrap .hrx-action-wrapper .btn-success{
     color: #72C279;
     background-color: #FFFFFF;
@@ -219,4 +219,7 @@
 #content.bootstrap .hrx .panel-heading{
     height: unset;
     padding: 5px;
+}
+.disable-me{
+    pointer-events: none;
 }

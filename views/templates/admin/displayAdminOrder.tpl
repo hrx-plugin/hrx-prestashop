@@ -18,6 +18,7 @@
     <div class="col-lg-6 d-print-none table">
         <div class="card">
             <form method="post" id="hrx_order_form">
+                <input type="hidden" id="kind" name="kind" value="{$kind}">
                 <div class="card-header">
                     <div class="row">
                         <div class="col-lg-6 card-header-title">
@@ -38,7 +39,7 @@
                     <div class="form-wrapper">
 
                         {* terminal settings *}
-                        
+                        {if $kind == 'delivery_location'}
                         <div class="form-group delivery-settings">
                             <label class="control-label col-lg-4 col-2 dimension-group">{l s="Parcel terminal" mod="hrxdelivery"}</label>
                             <div class="col-lg-7 dimensions-wrapper" id="terminals">
@@ -61,7 +62,7 @@
                                 {/if}
                             </div>
                         </div>
-
+                        {/if}
                         {* terminal settings *}
                         
                         <div class="form-group delivery-settings">

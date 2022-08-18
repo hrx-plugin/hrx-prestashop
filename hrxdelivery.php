@@ -43,6 +43,9 @@ class HrxDelivery extends CarrierModule
     const CONTROLLER_ORDER = 'AdminHrxOrder';
     const CONTROLLER_ADMIN_AJAX = 'AdminHrxDeliveryAjax';
 
+    const CARRIER_TYPE_PICKUP = "pickup";
+    const CARRIER_TYPE_COURIER = "courier";
+
     /**
      * List of hooks
      */
@@ -159,19 +162,21 @@ class HrxDelivery extends CarrierModule
     );
 
     public static $_carriers = array(
-        'pickup' => array(
+        self::CARRIER_TYPE_PICKUP => array(
             'type' => 'pickup',
             'id_name' => 'HRX_PICKUP_ID',
-            'reference_name' => 'HRX_TERMINAL_ID_REFERENCE',
+            'reference_name' => 'HRX_PICKUP_ID_REFERENCE',
             'title' => 'HRX parcel terminal',
             'image' => 'logo.png',
+            'kind' => 'delivery_location'
         ),
-        'courier' => array(
+        self::CARRIER_TYPE_COURIER => array(
             'type' => 'courier',
             'id_name' => 'HRX_COURIER_ID',
             'reference_name' => 'HRX_COURIER_ID_REFERENCE',
             'title' => 'HRX courier',
             'image' => 'logo.png',
+            'kind' => 'courier'
         ),
     );
 
@@ -1008,7 +1013,7 @@ class HrxDelivery extends CarrierModule
             {
                 $hrxOrder = new HrxOrder($id_order);
 
-                if($hrxOrder->tracking_number == ''){
+                if($hrxOrder->id_hrx && $hrxOrder->tracking_number == ''){
                     $result = HrxAPIHelper::getOrder($hrxOrder->id_hrx);
                     if(isset($result['tracking_number']) && isset($result['tracking_number'])){
                         $hrxOrder->tracking_number = $result['tracking_number'];
@@ -1031,36 +1036,6 @@ class HrxDelivery extends CarrierModule
 
                 $warehouses = HrxWarehouse::getWarehouses();
 
-                $form_fields = [];
-                $form_fields[0]['form'] = array(
-                    'input' => array(
-                        array(
-                            'type' => 'hidden',
-                            'name' => 'id_order',
-                            'value' => $id_order,
-                        ),
-                        array(
-                            'type' => 'text',
-                            'name' => 'width',
-                            'label' => $this->l('Width'),
-                        ),
-                        array(
-                            'type' => 'text',
-                            'name' => 'height',
-                            'label' => $this->l('Height'),
-                        ),
-                        array(
-                            'type' => 'text',
-                            'name' => 'length',
-                            'label' => $this->l('Length'),
-                        ),
-                        array(
-                            'type' => 'text',
-                            'name' => 'weight',
-                            'label' => $this->l('Weight'),
-                        ),
-                    ),
-                );
                 $section_id = 'DELIVERY';
                 $dimensions_fields = array(
                     array(
@@ -1110,6 +1085,7 @@ class HrxDelivery extends CarrierModule
                     ],
                     'require_return_label' => $require_return_label,
                     'actions' => $action_buttons,
+                    'kind' => $hrxOrder->kind,
                 ]);
                 
                 if(version_compare(_PS_VERSION_, '1.7', '>'))
@@ -1154,18 +1130,30 @@ class HrxDelivery extends CarrierModule
             $hrxOrder->width = $package_dimensions['w'];
             $hrxOrder->height = $package_dimensions['h'];
 
-            $terminal_id = HrxCartTerminal::getTerminalIdByCart($cart->id);
-            
-            if($terminal_id)
-            {
-                $terminal_info = HrxData::getDeliveryLocationInfo($terminal_id, $country_code);
-                $hrxOrder->delivery_location_id = $terminal_id;
-                $hrxOrder->terminal = $terminal_info['address'] . ', ' . $terminal_info['city'] . ', ' . $terminal_info['country'];
-            }
+            $carrier_id_reference = $carrier->id_reference;
+            $carrier_type = $this->getCarrierType($carrier_id_reference);
 
             $default_warehouse = HrxWarehouse::getDefaultWarehouseId();
             if($default_warehouse){
                 $hrxOrder->pickup_location_id = $default_warehouse;
+            }
+
+            if($carrier_type == self::CARRIER_TYPE_PICKUP)
+            {
+                $hrxOrder->kind = self::$_carriers[self::CARRIER_TYPE_PICKUP]['kind'];
+
+                $terminal_id = HrxCartTerminal::getTerminalIdByCart($cart->id);
+            
+                if($terminal_id)
+                {
+                    $terminal_info = HrxData::getDeliveryLocationInfo($terminal_id, $country_code);
+                    $hrxOrder->delivery_location_id = $terminal_id;
+                    $hrxOrder->terminal = $terminal_info['address'] . ', ' . $terminal_info['city'] . ', ' . $terminal_info['country'];
+                }
+            }
+            else
+            {
+                $hrxOrder->kind = self::$_carriers[self::CARRIER_TYPE_COURIER]['kind'];
             }
 
             $hrxOrder->add();

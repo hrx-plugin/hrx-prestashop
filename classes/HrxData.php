@@ -10,6 +10,11 @@ class HrxData
         'file_name' => 'terminals_%s.json', // %s - for country code
     );
 
+    private static $_courierDeliveryLocations = array(
+        'directory' => 'data',
+        'file_name' => 'courierDeliveryLocations.json', // %s - for country code
+    );
+
     public static function updateTerminals($page)
     {
         if($page == 1){
@@ -52,7 +57,7 @@ class HrxData
                 $all_terminals = array_merge($data_array, $terminals);
 
                 $json_data = json_encode($all_terminals);
-                    file_put_contents($file_path, $json_data);
+                file_put_contents($file_path, $json_data);
             }
         }
         $counter = count($result);
@@ -103,6 +108,32 @@ class HrxData
                 return array_values($terminals);
             }
         }
+        return [];
+    }
+
+    public static function getCourierDeliveryLocation($country_code)
+    {
+        $file_path = self::getFileDir(self::$_courierDeliveryLocations['directory'], self::$_courierDeliveryLocations['file_name']);
+        
+        if(!file_exists($file_path)){
+            $delivery_locations = HrxAPIHelper::getCourierDeliveryLocations();
+            if(!isset($delivery_locations['errors']))
+            {
+                $json_data = json_encode($delivery_locations);
+                file_put_contents($file_path, $json_data);
+            }
+        }
+
+        $result = file_get_contents($file_path);
+        
+        $lcoations = json_decode($result, true);
+
+        foreach($lcoations as $lcoation)
+        {
+            if($lcoation['country'] == $country_code)
+                return $lcoation;
+        }
+
         return [];
     }
 

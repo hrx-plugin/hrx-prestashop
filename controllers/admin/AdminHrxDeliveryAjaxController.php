@@ -96,10 +96,15 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
         $country_code = Country::getIsoById($address->id_country);
         $terminal_info = HrxData::getDeliveryLocationInfo($delivery_location_id, $country_code);
 
-        if(!$delivery_location_id)
-        {
-            $result['errors'][] = $this->module->l('Please select a terminal.');
+        $kind = Tools::getValue('kind');
+
+        if($kind == HrxDelivery::CARRIER_TYPE_PICKUP){
+            if(!$delivery_location_id)
+            {
+                $result['errors'][] = $this->module->l('Please select a terminal.');
+            }
         }
+        
         else if(!$pickup_location_id)
         {
             $result['errors'][] = $this->module->l('Please select a warehouse.');
@@ -244,36 +249,6 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
 
             $warehouses = HrxWarehouse::getWarehouses();
 
-            $form_fields = [];
-            $form_fields[0]['form'] = array(
-                'input' => array(
-                    array(
-                        'type' => 'hidden',
-                        'name' => 'id_order',
-                        'value' => $id_order,
-                    ),
-                    array(
-                        'type' => 'text',
-                        'name' => 'width',
-                        'label' => $this->l('Width'),
-                    ),
-                    array(
-                        'type' => 'text',
-                        'name' => 'height',
-                        'label' => $this->l('Height'),
-                    ),
-                    array(
-                        'type' => 'text',
-                        'name' => 'length',
-                        'label' => $this->l('Length'),
-                    ),
-                    array(
-                        'type' => 'text',
-                        'name' => 'weight',
-                        'label' => $this->l('Weight'),
-                    ),
-                ),
-            );
             $section_id = 'DELIVERY';
             $dimensions_fields = array(
                 array(
@@ -319,6 +294,7 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 'status' => $hrxOrder->status_code,
                 'require_return_label' => $require_return_label,
                 'actions' => $actions,
+                'kind' => $hrxOrder->kind,
             ]);
 
             die(json_encode(['modal' => $this->context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/order_modal.tpl')]));
@@ -346,9 +322,16 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 $result['errors'][] = $this->module->l('Warehouse is required.');
             }
 
-            $delivery_location = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
-            if(!$delivery_location){
-                $result['errors'][] = $this->module->l('Parcel terminal is required.');
+            if($hrxOrder->kind == HrxDelivery::CARRIER_TYPE_PICKUP)
+            {
+                $delivery_location = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
+                if(!$delivery_location){
+                    $result['errors'][] = $this->module->l('Parcel terminal is required.');
+                }
+            }
+            else
+            {
+                $delivery_location = HrxData::getCourierDeliveryLocation($country_code);
             }
             
             $phone_patern = $delivery_location['recipient_phone_regexp'] ?? '';
@@ -366,6 +349,10 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 'name' => $address->firstname . ' ' . $address->lastname,
                 'email' => $customer->email,
                 'phone' => $phone,
+                'postcode' => $address->postcode,
+                'city' => $address->city,
+                'country' => $address->country,
+                'address' => $address->address1,
             ];
 
             $shipmentData = [
@@ -381,7 +368,9 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 die(json_encode($result));
             }
 
-            $response = HrxAPIHelper::createOrder($pickup_location_id, $delivery_location, $customerData, $shipmentData);
+            $delivery_kind = $hrxOrder->kind;
+
+            $response = HrxAPIHelper::createOrder($pickup_location_id, $delivery_location, $customerData, $shipmentData, $delivery_kind);
 
             if(isset($response['success'])){
                 $res = $response['success'];

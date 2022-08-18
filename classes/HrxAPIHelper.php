@@ -90,13 +90,17 @@ class HrxAPIHelper
         return $response;
     }
 
-    public static function createOrder($pickup_location_id, $delivery_location, $customerData, $shipmentData)
+    public static function createOrder($pickup_location_id, $delivery_location, $customerData, $shipmentData, $kind)
     {
         try {
             $receiver = new Receiver();
             $receiver->setName($customerData['name']);
             $receiver->setEmail($customerData['email']);
             $receiver->setPhone($customerData['phone'], $delivery_location['recipient_phone_regexp']);
+            $receiver->setPostcode($customerData['postcode']);
+            $receiver->setCity($customerData['city']);
+            $receiver->setCountry($customerData['country']);
+            $receiver->setAddress($customerData['address']);
 
             $shipment = new Shipment();
             $shipment->setReference($shipmentData['reference']);
@@ -108,9 +112,16 @@ class HrxAPIHelper
 
             $order = new Order();
             $order->setPickupLocationId($pickup_location_id);
-            $order->setDeliveryLocation($delivery_location['id']);
+
+            if($kind == HrxDelivery::CARRIER_TYPE_PICKUP){
+                $order->setDeliveryLocation($delivery_location['id']);
+            }
+            
             $order->setReceiver($receiver);
             $order->setShipment($shipment);
+            
+            $order->setDeliveryKind($kind);
+
             $order_data = $order->prepareOrderData();
 
             //sending order
@@ -144,4 +155,16 @@ class HrxAPIHelper
         return $response;
     }
     
+    public static function getCourierDeliveryLocations()
+    {
+        try {
+            $instance = self::getInstance();
+            $response = $instance->getCourierDeliveryLocations();
+        }
+        catch (Exception $e) 
+        {
+            $response['error'] = $e->getMessage();
+        }
+        return $response;
+    }
 }

@@ -56,6 +56,7 @@ class HrxOrder extends ObjectModel
             'tracking_url'          => ['type' => self::TYPE_STRING, 'size' => 100],
             'status'                => ['type' => self::TYPE_INT, 'size' => 10],
             'status_code'           => ['type' => self::TYPE_STRING, 'size' => 15],
+            'kind'                  => ['type' => self::TYPE_STRING, 'size' => 17],
             'date_add'              => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
             'date_upd'              => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
             ],

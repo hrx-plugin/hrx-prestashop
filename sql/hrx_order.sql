@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `_DB_PREFIX_hrx_order` (
     `tracking_url` varchar(100),
     `status` int(10) NOT NULL,
     `status_code` varchar(15) NOT NULL,
+    `kind` varchar(17) NOT NULL,
     `date_add` datetime NOT NULL,
     `date_upd` datetime NOT NULL,
     PRIMARY KEY (`id`),

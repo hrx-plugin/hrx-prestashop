@@ -23,13 +23,13 @@
                 <div class="modal-body">
 
                     <form method="post" id="hrx_order_form">
-                       
+                       <input type="hidden" id="kind" name="kind" value="{$kind}">
                         <div class="card-body hrx">
                             <div class="response mb-3"></div>
                             <div class="">
 
                                 {* terminal settings *}
-                                
+                                {if $kind == 'delivery_location'}
                                 <div class="form-group delivery-settings">
                                     <label class="control-label col-lg-2 dimension-group">{l s="Parcel terminal" mod="hrxdelivery"}</label>
                                     <div class="col-lg-9 dimensions-wrapper" id="terminals">
@@ -51,7 +51,7 @@
                                         {/if}
                                     </div>
                                 </div>
-                                
+                                {/if}
 
                                 <input type="hidden" name="terminal-info" id="terminal-info" >
 

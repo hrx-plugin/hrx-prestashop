@@ -18,6 +18,7 @@
     <div class="col-lg-6 d-print-none">
         <div class="panel">
             <form method="post" id="hrx_order_form">
+                <input type="hidden" id="kind" name="kind" value="{$kind}">
                 <div class="panel-heading">
                     <div class="row">
                         <div class="col-lg-6 card-header-title">

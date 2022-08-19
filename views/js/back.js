@@ -395,7 +395,7 @@ function cancelOrder(id_order)
 
 function showTableResponse(msg, type) 
 {
-    if($('#form-hrx_order').length == 0){
+    if($('#form-hrx_order').length == 0 || $('#hrx_order_form').length != 0){
         showResponse(msg, type);
         return;
     }

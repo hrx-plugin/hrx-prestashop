@@ -174,7 +174,11 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
 
         $selected_terminal = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
 
-        $terminals = HrxData::getTerminalsByDimensionsAndCity($country_code, $shipmentData, $selected_terminal);
+        $terminals = [];
+        if($hrxOrder->kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
+            $terminals = HrxData::getTerminalsByDimensionsAndCity($country_code, $shipmentData, $selected_terminal);
+        }
+        
         $html = '';
 
         if($terminals)
@@ -257,7 +261,10 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
             $country_code = Country::getIsoById($address->id_country);
             $selected_terminal = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
 
-            $terminalsByCities = HrxData::getTerminalsByDimensionsAndCity($country_code, $hrxOrder, $selected_terminal);
+            $terminalsByCities = [];
+            if($hrxOrder->kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
+                $terminalsByCities = HrxData::getTerminalsByDimensionsAndCity($country_code, $hrxOrder, $selected_terminal);
+            }
 
             $warehouses = HrxWarehouse::getWarehouses();
 

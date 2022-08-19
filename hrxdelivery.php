@@ -1032,7 +1032,10 @@ class HrxDelivery extends CarrierModule
 
                 $selected_terminal = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
 
-                $terminalsByDimensionsAndCity = HrxData::getTerminalsByDimensionsAndCity($country_code, $hrxOrder, $selected_terminal);
+                $terminalsByDimensionsAndCity = [];
+                if($hrxOrder->kind == self::$_carriers[self::CARRIER_TYPE_PICKUP]['kind']){
+                    $terminalsByDimensionsAndCity = HrxData::getTerminalsByDimensionsAndCity($country_code, $hrxOrder, $selected_terminal);
+                }
 
                 $warehouses = HrxWarehouse::getWarehouses();
 

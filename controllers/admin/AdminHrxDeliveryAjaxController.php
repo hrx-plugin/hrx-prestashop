@@ -94,37 +94,49 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
         $order = new Order($id_order);
         $address = new Address($order->id_address_delivery);
         $country_code = Country::getIsoById($address->id_country);
-        $terminal_info = HrxData::getDeliveryLocationInfo($delivery_location_id, $country_code);
+        $terminal_info = [];
 
         $kind = Tools::getValue('kind');
 
-        if($kind == HrxDelivery::CARRIER_TYPE_PICKUP){
+        if($kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
+
             if(!$delivery_location_id)
             {
                 $result['errors'][] = $this->module->l('Please select a terminal.');
             }
+            else
+            {
+                $terminal_info = HrxData::getDeliveryLocationInfo($delivery_location_id, $country_code);
+
+                if(!HrxData::isFit($terminal_info, $shipmentData))
+                {
+                    $result['errors'][] = $this->module->l('The parcel does not fit into the parcel terminal. Update the list of terminals and select another terminal.');
+                }
+            }            
         }
         
-        else if(!$pickup_location_id)
+        if(!$pickup_location_id)
         {
             $result['errors'][] = $this->module->l('Please select a warehouse.');
         }
-        else if(!$shipmentData->length || !$shipmentData->width || !$shipmentData->height || !$shipmentData->weight)
+
+        if(!$shipmentData->length || !$shipmentData->width || !$shipmentData->height || !$shipmentData->weight)
         {
             $result['errors'][] = $this->module->l('Parcel dimensions and weight are required.');
         }
-        else if(!HrxData::isFit($terminal_info, $shipmentData))
-        {
-            $result['errors'][] = $this->module->l('The parcel does not fit into the parcel terminal. Update the list of terminals and select another terminal.');
-        }
-
-        else
+        
+        if(!isset($result['errors']))
         {
             $obj = new HrxOrder($id_order);
             $obj->id_shop = $this->context->shop->id;
             $obj->pickup_location_id = $pickup_location_id;
             $obj->delivery_location_id = $delivery_location_id;
-            $obj->terminal = $terminal_info['address'] . ', ' . $terminal_info['city'] . ', ' . $terminal_info['country'];
+
+            if($kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind'])
+                $obj->terminal = $terminal_info['address'] . ', ' . $terminal_info['city'] . ', ' . $terminal_info['country'];
+            else
+                $obj->terminal = '--';
+
             $obj->length = $shipmentData->length;
             $obj->width = $shipmentData->width;
             $obj->height = $shipmentData->height;
@@ -134,7 +146,7 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
     
             if($res){
                 $result['success'][] = $this->module->l('Shipment data updated successfully.');
-                $result['data']['terminal'] = $terminal_info['address'] . ', ' . $terminal_info['city'] . ', ' . $terminal_info['country'];
+                $result['data']['terminal'] = $obj->terminal;
                 $result['data']['warehouse'] = HrxWarehouse::getName($pickup_location_id);
             }
             else{
@@ -322,7 +334,7 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 $result['errors'][] = $this->module->l('Warehouse is required.');
             }
 
-            if($hrxOrder->kind == HrxDelivery::CARRIER_TYPE_PICKUP)
+            if($hrxOrder->kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind'])
             {
                 $delivery_location = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
                 if(!$delivery_location){
@@ -341,17 +353,13 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 $result['errors'][] = $this->module->l('Invalid phone format.');
             }
 
-            // if(!HrxData::isFit($delivery_location ,$hrxOrder)){
-            //     $result['errors'][] = $this->module->l('The parcel does not fit into the parcel terminal. Please change parcel terminal.');
-            // }
-
             $customerData = [
                 'name' => $address->firstname . ' ' . $address->lastname,
                 'email' => $customer->email,
                 'phone' => $phone,
                 'postcode' => $address->postcode,
                 'city' => $address->city,
-                'country' => $address->country,
+                'country' => $country_code,
                 'address' => $address->address1,
             ];
 

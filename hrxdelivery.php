@@ -345,7 +345,7 @@ class HrxDelivery extends CarrierModule
             }
             if($section_id == 'PRICE' && $id == 'tax')
             {
-                if((float)$value <= 0 || !is_numeric($value)){
+                if((float)$value < 0 || !is_numeric($value)){
                     return $this->displayWarning('Tax should be positive number');
                 }
             }
@@ -1320,7 +1320,15 @@ class HrxDelivery extends CarrierModule
 
     public function getActionButtons($id_order, $is_table = true)
     {
-        $status = HrxOrder::getOrderStatus($id_order);
+        $hrxOrder = new HrxOrder($id_order);
+        $status = $hrxOrder->status_code;
+        $kind = $hrxOrder->kind;
+
+        $or_pickup = false;
+        if($kind == self::$_carriers[self::CARRIER_TYPE_PICKUP]['kind']){
+            $or_pickup = true;
+        }
+
         $require_return_label = Configuration::get(HrxDelivery::$_configKeys['ADVANCED']['return_label']);
 
         $this->context->smarty->assign([
@@ -1331,7 +1339,8 @@ class HrxDelivery extends CarrierModule
             'href' => '#',
             'status' => $status,
             'require_return_label' => $require_return_label,
-            'is_table' => $is_table
+            'is_table' => $is_table,
+            'or_pickup' => $or_pickup,
         ]);
 
         return $this->context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/action_button.tpl');

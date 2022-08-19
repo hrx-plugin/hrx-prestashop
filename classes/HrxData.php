@@ -1,5 +1,7 @@
 <?php
 
+use \setasign\Fpdi\Fpdi;
+
 class HrxData
 {
     /**
@@ -196,5 +198,84 @@ class HrxData
         }
         
         return true;
+    }
+
+    public static function bulkPrintLabels($order_ids, $label_type)
+    {
+        if(empty($order_ids))
+            return;
+
+        $pdfs = [];
+
+        if($label_type == 'shipment')
+            $label_directory = HrxDelivery::$_labelPdfDir;
+        else 
+            $label_directory = HrxDelivery::$_returnLabelPdfDir;
+
+        foreach($order_ids as $id)
+        {
+            $hrxOrder = new HrxOrder($id);
+            if(Validate::isLoadedObject($hrxOrder) && $hrxOrder->id_hrx != '')
+            {
+                $response = HrxAPIHelper::getLabel($label_type, $hrxOrder->id_hrx);
+    
+                if(isset($response['error']))
+                {
+                    $result['errors'] = $response['error'];
+                }
+                else
+                {
+                    $file_content = $response['file_content'] ?? '';
+
+                    if($file_content){
+                        $pdfs[] = $response['file_content'];
+                    }                   
+                }
+            }
+        }
+
+        $res = self::mergePdf($pdfs);
+
+        $filename = implode(",", $order_ids) . '.pdf';
+        $file_path =  _PS_MODULE_DIR_ . $label_directory . $filename;
+        file_put_contents($file_path, $res);
+        
+        self::printPdf($file_path, $filename);
+    }
+
+    private static function mergePdf($pdfs) {
+        $pageCount = 0;
+        // initiate FPDI
+        $pdf = new Fpdi();
+
+        foreach ($pdfs as $data) {
+            $name = tempnam("/tmp", "tmppdf");
+            $handle = fopen($name, "w");
+            fwrite($handle, base64_decode($data));
+            fclose($handle);
+
+            $pageCount = $pdf->setSourceFile($name);
+            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                $templateId = $pdf->importPage($pageNo);
+                
+                $pdf->AddPage('P');
+                
+                $pdf->useTemplate($templateId, ['adjustPageSize' => true]);
+            }
+        }
+        return $pdf->Output('S');
+    }
+
+    private static function printPdf($path, $filename)
+    {
+        // make sure there is nothing before headers
+        if (ob_get_level()) ob_end_clean();
+        header("Content-Type: application/pdf; name=\" " . $filename . ".pdf");
+        header("Content-Transfer-Encoding: binary");
+        // disable caching on client and proxies, if the download content vary
+        header("Expires: 0");
+        header("Cache-Control: no-cache, must-revalidate");
+        header("Pragma: no-cache");
+        readfile($path);
     }
 }

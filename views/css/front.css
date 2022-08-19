@@ -39,6 +39,8 @@
     color: #838383;
     font-weight: 400;
     font-size: 14px;
+    width: auto;
+    border: unset;
 }
 .hrx.tmjs-modal a.tmjs-geolocation-btn span{
     padding-left: 7px;

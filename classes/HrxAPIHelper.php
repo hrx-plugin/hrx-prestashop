@@ -81,7 +81,7 @@ class HrxAPIHelper
     {
         try {
             $instance = self::getInstance();
-            $response = $instance->updateReadyState($id_order);
+            $response = $instance->changeOrderReadyState($id_order, true);
         }
         catch (Exception $e) 
         {
@@ -113,7 +113,7 @@ class HrxAPIHelper
             $order = new Order();
             $order->setPickupLocationId($pickup_location_id);
 
-            if($kind == HrxDelivery::CARRIER_TYPE_PICKUP){
+            if($kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
                 $order->setDeliveryLocation($delivery_location['id']);
             }
             
@@ -123,7 +123,6 @@ class HrxAPIHelper
             $order->setDeliveryKind($kind);
 
             $order_data = $order->prepareOrderData();
-
             //sending order
         
             $instance = self::getInstance();

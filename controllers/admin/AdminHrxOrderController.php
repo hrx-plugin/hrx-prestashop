@@ -4,6 +4,7 @@ class AdminHrxOrderController extends ModuleAdminController
 {
     public function __construct()
     {
+        
         parent::__construct();
 
         $this->list_no_link = true;
@@ -31,7 +32,10 @@ class AdminHrxOrderController extends ModuleAdminController
         foreach ($statuses as $status) {
             $this->statuses_array[$status['id_order_state']] = $status['name'];
         }
-        $this->helper = $this;
+
+
+        $this->setTrackingNumbers();
+
         $this->prepareOrderList();
     }
 
@@ -96,6 +100,24 @@ class AdminHrxOrderController extends ModuleAdminController
             'class' => 'id_order_1'
         );
 
+        $this->bulk_actions = array(
+            'printLabels' => array(
+                'text' => $this->module->l('Print Labels'),
+                'icon' => 'icon-print'
+            ),
+            'markAsReady' => array(
+                'text' => $this->module->l('Mark as ready'),
+                'icon' => 'icon-save'
+            ),
+        );
+        $require_return_label = Configuration::get(HrxDelivery::$_configKeys['ADVANCED']['return_label']);
+        if($require_return_label)
+        {
+            $this->bulk_actions['printReturnLabels'] = array(
+                    'text' => $this->module->l('Print Return Labels'),
+                    'icon' => 'icon-print'
+            );
+        }
     }
 
     public function EditOrderBtn($id_order)
@@ -119,5 +141,89 @@ class AdminHrxOrderController extends ModuleAdminController
             'hrxdelivery_cancel_order_url' => $this->context->link->getAdminLink(HrxDelivery::CONTROLLER_ADMIN_AJAX) . '&action=cancelOrder',
             'hrxdelivery_update_ready_state' => $this->context->link->getAdminLink(HrxDelivery::CONTROLLER_ADMIN_AJAX) . '&action=updateReadyState',
         ]);
+    }
+
+    private function setTrackingNumbers()
+    {
+        $orders = HrxOrder::getOrdersWithoutTracking();
+
+
+        if($orders)
+        {
+            foreach($orders as $order)
+            {
+                $hrxOrder = new HrxOrder((int)$order['id']);
+                $result = HrxAPIHelper::getOrder($hrxOrder->id_hrx);
+
+                if(isset($result['tracking_number']) && isset($result['tracking_number']))
+                {
+                    $hrxOrder->tracking_number = $result['tracking_number'];
+                    $hrxOrder->tracking_url = $result['tracking_url'];
+                    $hrxOrder->update();
+                }
+            }
+        }
+    }
+
+    public function postProcess()
+    {
+        parent::postProcess();
+        if(Tools::isSubmit('submitBulkprintLabelshrx_order'))
+        {
+            $order_ids = Tools::getValue('hrx_orderBox');
+            HrxData::bulkPrintLabels($order_ids, 'shipment');
+        }
+
+        if(Tools::isSubmit('submitBulkprintReturnLabelshrx_order'))
+        {
+            $order_ids = Tools::getValue('hrx_orderBox');
+            HrxData::bulkPrintLabels($order_ids, 'return');
+        }
+
+        if(Tools::isSubmit('submitBulkmarkAsReadyhrx_order'))
+        {
+            $order_ids = Tools::getValue('hrx_orderBox');
+            if($order_ids)
+                $this->bulkUpdateReadyState($order_ids);
+        }
+        
+    }
+
+    private function bulkUpdateReadyState($order_ids)
+    {
+        foreach($order_ids as $id)
+        {
+            $hrxOrder = new HrxOrder($id);
+
+            if(Validate::isLoadedObject($hrxOrder) && $hrxOrder->id_hrx != '')
+            {
+                $response = HrxAPIHelper::updateReadyState($hrxOrder->id_hrx);
+
+                if(isset($response['error'])){
+                    $result['errors'][] = $response['error'];
+                }      
+                else{
+                    $hrxOrder->status = Configuration::get(HrxDelivery::$_order_states['ready']['key']);
+                    $hrxOrder->status_code = 'ready';
+                    $hrxOrder->update();
+    
+                    $this->changeOrderStatus($id, Configuration::get(HrxDelivery::$_order_states['ready']['key']));
+                }
+            }
+        }
+    }
+
+    private function changeOrderStatus($id_order, $status)
+    {
+        $order = new Order((int)$id_order);
+        if ($order->current_state != $status)
+        {
+            $history = new OrderHistory();
+            $history->id_order = (int)$id_order;
+            $history->id_employee = Context::getContext()->employee->id;
+            $history->changeIdOrderState((int)$status, $order);
+            $order->update();
+            $history->add();
+        }
     }
 }

@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInit80dc5cabe46e25bb2a3b557614c658bd
 {
     public static $prefixLengthsPsr4 = array (
+        's' => 
+        array (
+            'setasign\\Fpdi\\' => 14,
+        ),
         'H' => 
         array (
             'HrxApi\\' => 7,
@@ -14,6 +18,10 @@ class ComposerStaticInit80dc5cabe46e25bb2a3b557614c658bd
     );
 
     public static $prefixDirsPsr4 = array (
+        'setasign\\Fpdi\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/setasign/fpdi/src',
+        ),
         'HrxApi\\' => 
         array (
             0 => __DIR__ . '/..' . '/hrx/api-lib/src',
@@ -22,6 +30,7 @@ class ComposerStaticInit80dc5cabe46e25bb2a3b557614c658bd
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'FPDF' => __DIR__ . '/..' . '/setasign/fpdf/fpdf.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

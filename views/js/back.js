@@ -386,6 +386,7 @@ function cancelOrder(id_order)
                 row.find('.column-id_order_1 .create-order').remove();
 
                 row.find('.column-osname').html(res.data['status']);
+                $('.cancel-order a').remove();
             }
             $('.cancel-order a').removeClass('disable-me');
         }
@@ -398,22 +399,22 @@ function showTableResponse(msg, type)
         showResponse(msg, type);
         return;
     }
-    if($('#form-hrx_order .response').length == 0)
-        $('#form-hrx_order').prepend('<div class="response alert"></div>');
+    if($('#form-hrx_order .table-response.response').length == 0)
+        $('#form-hrx_order').prepend('<div class="table-response response alert"></div>');
     else
-        $('#form-hrx_order .response').addClass('alert').html('');
+        $('#form-hrx_order .table-response.response').addClass('alert').html('');
 
-    $('#form-hrx_order .response').removeClass('alert-danger alert-success');
-    $('#form-hrx_order .response').addClass('alert-' + type);
+    $('#form-hrx_order .table-response.response').removeClass('alert-danger alert-success');
+    $('#form-hrx_order .table-response.response').addClass('alert-' + type);
 
-    if($('#form-hrx_order .response').find('ol').length == 0)
-        $('#form-hrx_order .response').append('<ol></ol>');
+    if($('#form-hrx_order .table-response.response').find('ol').length == 0)
+        $('#form-hrx_order .table-response.response').append('<ol></ol>');
 
     // Clean html tags
     if(Array.isArray(msg))
         msg = msg[0];
     msg = msg.replace(/<\/?[^>]+(>|$)/g, "");
-    $('#form-hrx_order .response').find('ol').append(`<li>${msg}</li>`);
+    $('#form-hrx_order .table-response.response').find('ol').append(`<li>${msg}</li>`);
     
 }
 

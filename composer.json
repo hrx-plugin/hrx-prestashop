@@ -1,6 +1,8 @@
 {
   "require": {
-       "hrx/api-lib": "dev-main"
+       "hrx/api-lib": "dev-main",
+       "setasign/fpdi": "^2.3",
+       "setasign/fpdf": "^1.8"
    },
    "repositories": [
        {

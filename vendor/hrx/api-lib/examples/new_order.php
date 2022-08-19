@@ -65,6 +65,7 @@ try {
     $order = new Order();
     $order->setPickupLocationId($pickup_locations[0]['id']);
     $order->setDeliveryLocation($delivery_locations[0]['id']);
+    $order->setDeliveryKind('delivery_location');
     $order->setReceiver($receiver);
     $order->setShipment($shipment);
     $order_data = $order->prepareOrderData();

@@ -64,8 +64,10 @@
         </span>
     {/if}
 
-    {if isset($is_table) && $is_table == false && isset($status) && $status == ''}    
-        <button name="hrxdelivery_update_terminal_list" id="hrxdelivery_update_terminal_list_btn" class="btn btn-primary">{l s="Update terminal list" mod='hrxdelivery'}</button>
-        <button name="hrxdelivery_save_cart_info" id="hrxdelivery_save_cart_info_btn" class="btn btn-primary"><i class="icon-save"></i> {l s="Save" mod='hrxdelivery'}</button>
+    {if isset($is_table) && $is_table == false && isset($status) && $status == ''}   
+        {if $or_pickup} 
+            <button name="hrxdelivery_update_terminal_list" id="hrxdelivery_update_terminal_list_btn" class="btn btn-primary">{l s="Update terminal list" mod='hrxdelivery'}</button>
+        {/if}
+        <button name="hrxdelivery_save_cart_info" id="hrxdelivery_save_cart_info_btn" class="btn btn-primary">{l s="Save" mod='hrxdelivery'}</button>
     {/if}
 </div>

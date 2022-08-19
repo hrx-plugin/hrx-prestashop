@@ -62,25 +62,15 @@ class HrxOrder extends ObjectModel
             ],
     ];
 
-    public static function getOrderStatus($id_order)
+    public static function getOrdersWithoutTracking()
     {
         $query = (new DbQuery())
-        ->select("status_code")
         ->from(self::$definition['table'])
-        ->where('id = ' . (int)$id_order);
+        ->where('tracking_number = "" AND id_hrx != ""');
 
-        return Db::getInstance()->getValue($query);
-    }
+        $orders = Db::getInstance()->executeS($query);
 
-    //get orders id_hrx
-    public static function getHrxIds($order_ids)
-    {
-        $query = (new DbQuery())
-        ->select("id_hrx")
-        ->from(self::$definition['table'])
-        ->where('id IN(' . $order_ids . ') AND status_code != "new"');
-
-        return Db::getInstance()->executeS($query);
+        return $orders;
     }
 
 }

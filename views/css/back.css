@@ -112,6 +112,8 @@
 #hrx-delivery .dimensions-wrapper .control-label{
     font-size: 11px;
     margin-bottom: 4px;
+    text-align: left;
+    width: 100%;
 }
 #hrx-delivery .dimensions-wrapper .form-group{
     margin: 0;

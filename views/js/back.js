@@ -43,10 +43,22 @@ $(document).ready(function() {
         createOrderModal();
     });
 
-    $(document).on('click', '.create-order a', function(e) {
+    $(document).on('click', '#hrx_order_form .create-order a', function(e) {
         e.preventDefault();
         var id_order = $(this).attr('data-order');
-        createOrder(id_order);
+        createOrder(id_order, 'order-page');
+    });
+
+    $(document).on('click', '#table-hrx_order .create-order a', function(e) {
+        e.preventDefault();
+        var id_order = $(this).attr('data-order');
+        createOrder(id_order, 'table');
+    });
+
+    $(document).on('click', '#hrx-order-modal-wrapper .create-order a', function(e) {
+        e.preventDefault();
+        var id_order = $(this).attr('data-order');
+        createOrder(id_order, 'modal');
     });
 
     $(document).on('click', '.cancel-order a', function(e) {
@@ -70,10 +82,16 @@ $(document).ready(function() {
     });
 
     //update order state to ready
-    $(document).on('click', '.make-order-ready a', function(e) {
+    $(document).on('click', '#hrx_order_form .make-order-ready a', function(e) {
         e.preventDefault();
         var id_order = $(this).attr('data-order');
-        updateReadyState(id_order, 'return');
+        updateReadyState(id_order, 'order-page');
+    });
+
+    $(document).on('click', '#table-hrx_order .make-order-ready a', function(e) {
+        e.preventDefault();
+        var id_order = $(this).attr('data-order');
+        updateReadyState(id_order, 'table');
     });
 
     //update price table
@@ -283,11 +301,15 @@ function createOrderModal() {
     });
 }
 
-function createOrder(id_order)
+function createOrder(id_order, container)
 {
     var form_data = [];
     form_data.push({'name' : 'ajax', 'value' : 1});
     form_data.push({'name' : 'id_order', 'value' : id_order});
+
+    if(container == 'table' || container == 'modal'){
+        form_data.push({'name' : 'is_table', 'value' : true});
+    }
 
     $('.create-order a').addClass('disable-me');
 
@@ -299,9 +321,9 @@ function createOrder(id_order)
         success: function (res) 
         {
             if (typeof res.errors != 'undefined') {
-                showTableResponse(res.errors, 'danger');
+                showTableResponse(res.errors, 'danger', container);
             } else {
-                showTableResponse(res.success, 'success');
+                showTableResponse(res.success, 'success', container);
 
                 if($('.table.hrx_order').length == 0)
                 {
@@ -324,11 +346,15 @@ function createOrder(id_order)
     });
 }
 
-function updateReadyState(id_order)
+function updateReadyState(id_order, container)
 {
     var form_data = [];
     form_data.push({'name' : 'ajax', 'value' : 1});
     form_data.push({'name' : 'id_order', 'value' : id_order});
+
+    if(container == 'table' || container == 'modal'){
+        form_data.push({'name' : 'is_table', 'value' : true});
+    }
 
     $('.make-order-ready a').addClass('disable-me');
     
@@ -340,9 +366,9 @@ function updateReadyState(id_order)
         success: function (res) 
         {
             if (typeof res.errors != 'undefined') {
-                showTableResponse(res.errors, 'danger');
+                showTableResponse(res.errors, 'danger', container);
             } else {
-                showTableResponse(res.success[0], 'success');
+                showTableResponse(res.success[0], 'success', container);
 
                 if($('.table.hrx_order').length == 0)
                 {
@@ -384,20 +410,26 @@ function cancelOrder(id_order)
 
                 row = $('.table.hrx_order').find('[data-order="' + id_order + '"]').closest('tr');
                 row.find('.column-id_order_1 .create-order').remove();
-
+                row.find('.column-id_order_1 .make-order-ready').remove();
+                row.find('.column-id_order_1 .cancel-order').remove();
                 row.find('.column-osname').html(res.data['status']);
-                $('.cancel-order a').remove();
+
+                $('#hrx_order_form .make-order-ready').remove();
+                $('#hrx_order_form .cancel-order').remove();
             }
             $('.cancel-order a').removeClass('disable-me');
         }
     });
 }
 
-function showTableResponse(msg, type) 
+function showTableResponse(msg, type, container = '') 
 {
-    if($('#form-hrx_order').length == 0 || $('#hrx_order_form').length != 0){
+    if(container == 'order-page' || container == 'modal'){
         showResponse(msg, type);
         return;
+    }
+    if($('#form-hrx_order').length == 0 || $('#hrx_order_form').length != 0){
+        
     }
     if($('#form-hrx_order .table-response.response').length == 0)
         $('#form-hrx_order').prepend('<div class="table-response response alert"></div>');

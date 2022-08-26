@@ -63,7 +63,6 @@
             </a>
         </span>
     {/if}
-
     {if isset($is_table) && $is_table == false && isset($status) && $status == ''}   
         {if $or_pickup} 
             <button name="hrxdelivery_update_terminal_list" id="hrxdelivery_update_terminal_list_btn" class="btn btn-primary">{l s="Update terminal list" mod='hrxdelivery'}</button>

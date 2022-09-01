@@ -1089,6 +1089,7 @@ class HrxDelivery extends CarrierModule
                     'require_return_label' => $require_return_label,
                     'actions' => $action_buttons,
                     'kind' => $hrxOrder->kind,
+                    'select_warehouse' => $this->l('Please select a warehouse'),
                 ]);
                 
                 if(version_compare(_PS_VERSION_, '1.7', '>'))

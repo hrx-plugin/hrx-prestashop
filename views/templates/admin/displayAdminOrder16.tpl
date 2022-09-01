@@ -70,6 +70,7 @@
                             <div class="col-lg-7 dimensions-wrapper">
                                 {if isset($warehouses) && !empty($warehouses)}
                                     <select name="pickup_location_id" id="pickup_location_id" class="custom-select">
+                                        <option value="0" selected="true" disabled="disabled">{$select_warehouse}</option>
                                         {foreach from=$warehouses item=field}
                                             <option value="{$field.id_warehouse}" {if $field.id_warehouse == $selected_warehouse}selected{/if}>
                                                 {$field.name}, {$field.address}, {$field.city}, {$field.country}

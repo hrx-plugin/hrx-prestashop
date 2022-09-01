@@ -314,6 +314,7 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 'require_return_label' => $require_return_label,
                 'actions' => $actions,
                 'kind' => $hrxOrder->kind,
+                'select_warehouse' => $this->l('Please select warehouse'),
             ]);
 
             die(json_encode(['modal' => $this->context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/order_modal.tpl')]));

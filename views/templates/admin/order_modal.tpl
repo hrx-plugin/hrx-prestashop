@@ -61,8 +61,8 @@
                                     <label class="control-label col-lg-2 dimension-group">{l s="Warehouse" mod="hrxdelivery"}</label>
                                     <div class="col-lg-9 dimensions-wrapper">
                                         <select name="pickup_location_id" id="pickup_location_id" class="custom-select">
+                                            <option value="0" selected="true" disabled="disabled">{$select_warehouse}</option>
                                             {foreach from=$warehouses item=field}
-                                                <option value="0" selected="true" disabled="disabled">{$select_warehouse}</option>
                                                 <option value="{$field.id_warehouse}" {if $field.id_warehouse == $selected_warehouse}selected{/if}>
                                                     {$field.name}, {$field.address}, {$field.city}, {$field.country}
                                                 </option>

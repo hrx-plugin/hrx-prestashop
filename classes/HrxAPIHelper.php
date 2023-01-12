@@ -8,20 +8,21 @@ use HrxApi\Shipment;
 class HrxAPIHelper
 {
     private static $instance = null;
-  
+
     private function __construct()
     {
         $token = Configuration::get(HrxDelivery::$_configKeys['API']['token']);
-        self::$instance = new API($token, true, false);
+        $test_mode = Configuration::get(HrxDelivery::$_configKeys['API']['mode']) ? false : true;
+        self::$instance = new API($token, $test_mode, false);
     }
-    
+
     private static function getInstance()
     {
         if (self::$instance == null)
         {
             new HrxAPIHelper();
         }
-    
+
         return self::$instance;
     }
 
@@ -31,7 +32,7 @@ class HrxAPIHelper
             $instance = self::getInstance();
             $response = $instance->getPickupLocations($page);
         }
-        catch (Exception $e) 
+        catch (Exception $e)
         {
             $response['error'] = $e->getMessage();
         }
@@ -44,7 +45,7 @@ class HrxAPIHelper
             $instance = self::getInstance();
             $response = $instance->getDeliveryLocations($page);
         }
-        catch (Exception $e) 
+        catch (Exception $e)
         {
             $response['error'] = $e->getMessage();
         }
@@ -57,7 +58,7 @@ class HrxAPIHelper
             $instance = self::getInstance();
             $response = $instance->getOrder($id_order);
         }
-        catch (Exception $e) 
+        catch (Exception $e)
         {
             $response['error'] = $e->getMessage();
         }
@@ -70,7 +71,7 @@ class HrxAPIHelper
             $instance = self::getInstance();
             $response = $instance->cancelOrder($id_order);
         }
-        catch (Exception $e) 
+        catch (Exception $e)
         {
             $response['error'] = $e->getMessage();
         }
@@ -83,7 +84,7 @@ class HrxAPIHelper
             $instance = self::getInstance();
             $response = $instance->changeOrderReadyState($id_order, true);
         }
-        catch (Exception $e) 
+        catch (Exception $e)
         {
             $response['error'] = $e->getMessage();
         }
@@ -116,20 +117,20 @@ class HrxAPIHelper
             if($kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
                 $order->setDeliveryLocation($delivery_location['id']);
             }
-            
+
             $order->setReceiver($receiver);
             $order->setShipment($shipment);
-            
+
             $order->setDeliveryKind($kind);
 
             $order_data = $order->prepareOrderData();
             //sending order
-        
+
             $instance = self::getInstance();
             $order_response = $instance->generateOrder($order_data);
             $response['success'] = isset($order_response['id']) ? $order_response : false;
-        } 
-        catch (Exception $e) 
+        }
+        catch (Exception $e)
         {
             $response['error'] = $e->getMessage();
         }
@@ -141,26 +142,26 @@ class HrxAPIHelper
     {
         try {
             $instance = self::getInstance();
-            
+
             if($type == 'shipment')
                 $response = $instance->getLabel($id_order);
             else
                 $response = $instance->getReturnLabel($id_order);
         }
-        catch (Exception $e) 
+        catch (Exception $e)
         {
             $response['error'] = $e->getMessage();
         }
         return $response;
     }
-    
+
     public static function getCourierDeliveryLocations()
     {
         try {
             $instance = self::getInstance();
             $response = $instance->getCourierDeliveryLocations();
         }
-        catch (Exception $e) 
+        catch (Exception $e)
         {
             $response['error'] = $e->getMessage();
         }

@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Fixed
 - Fixed mobile phone number get from Order address
+- Fixed delivery method recognition
 
 ### Improved
 - Added Readme file

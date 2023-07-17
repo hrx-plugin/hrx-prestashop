@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.1] - Unreleased
+## [1.0.1] - 2023-07-17
 ### Fixed
 - Fixed mobile phone number get from Order address
 - Fixed delivery method recognition

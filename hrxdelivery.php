@@ -190,7 +190,7 @@ class HrxDelivery extends CarrierModule
     {
         $this->name = 'hrxdelivery';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->author = 'mijora.lt';
         $this->need_instance = 1;
         $this->bootstrap = true;

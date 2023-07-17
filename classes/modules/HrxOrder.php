@@ -52,7 +52,7 @@ class HrxOrder extends ObjectModel
             'width'                 => ['type' => self::TYPE_FLOAT, 'size' => 10],
             'height'                => ['type' => self::TYPE_FLOAT, 'size' => 10],
             'weight'                => ['type' => self::TYPE_FLOAT, 'size' => 10],
-            'tracking_number'       => ['type' => self::TYPE_STRING, 'size' => 15],
+            'tracking_number'       => ['type' => self::TYPE_STRING, 'size' => 30],
             'tracking_url'          => ['type' => self::TYPE_STRING, 'size' => 100],
             'status'                => ['type' => self::TYPE_INT, 'size' => 10],
             'status_code'           => ['type' => self::TYPE_STRING, 'size' => 15],

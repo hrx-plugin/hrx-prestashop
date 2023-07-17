@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `_DB_PREFIX_hrx_order` (
     `width` float(10) NOT NULL,
     `height` float(10) NOT NULL,
     `weight` float(10) NOT NULL,
-    `tracking_number` varchar(15),
+    `tracking_number` varchar(30),
     `tracking_url` varchar(100),
     `status` int(10) NOT NULL,
     `status_code` varchar(15) NOT NULL,

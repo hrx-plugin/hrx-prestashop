@@ -1,9 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.1] - Unreleased
 ### Fixed
 - Fixed mobile phone number get from Order address
 - Fixed delivery method recognition
+- Changed tracking_number length in database to 30 chars
 
 ### Improved
 - Added Readme file

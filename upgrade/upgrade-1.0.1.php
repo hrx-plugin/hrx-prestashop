@@ -27,17 +27,14 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-/**
- * This function updates your module from previous versions to the version 1.1,
- * usefull when you modify your database, or register a new hook ...
- * Don't forget to create one file per version.
- */
-function upgrade_module_1_1_0($module)
+function upgrade_module_1_0_1($module)
 {
-    /*
-     * Do everything you want right there,
-     * You could add a column in one of your module's tables
-     */
+    $db = Db::getInstance();
+
+    $query = "ALTER TABLE `" . _DB_PREFIX_ . "hrx_order` MODIFY COLUMN `tracking_number` varchar(32)";
+    if ( ! $db->execute($query) ) {
+        return false;
+    }
 
     return true;
 }

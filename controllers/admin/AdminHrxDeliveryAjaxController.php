@@ -356,7 +356,8 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
             
             $phone_patern = $delivery_location['recipient_phone_regexp'] ?? '';
             $phone_prefix = $delivery_location['recipient_phone_prefix'] ?? '';
-            $phone = self::preparePhoneNumber($address->phone, $phone_prefix, $phone_patern);
+            $phone = (!empty($address->phone_mobile)) ? $address->phone_mobile : $address->phone;
+            $phone = self::preparePhoneNumber($phone, $phone_prefix, $phone_patern);
             if(!$phone){
                 $result['errors'][] = $this->module->l('Invalid phone format.');
             }

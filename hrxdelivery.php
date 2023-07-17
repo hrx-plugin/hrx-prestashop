@@ -190,7 +190,7 @@ class HrxDelivery extends CarrierModule
     {
         $this->name = 'hrxdelivery';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->author = 'mijora.lt';
         $this->need_instance = 1;
         $this->bootstrap = true;
@@ -781,7 +781,7 @@ class HrxDelivery extends CarrierModule
             $add_content = ($this->context->controller->php_self == 'order' && isset($this->context->controller->step) && $this->context->controller->step != 3) ||  $this->context->controller->php_self == 'order-opc';
         }
 
-        $carrier = new Carrier((int)Configuration::get(self::$_carriers['pickup']['id_name']));
+        $carrier = new Carrier((int)Configuration::get(self::$_carriers['pickup']['reference_name']));
 
         Media::addJsDef([
             'hrxdelivery_front_controller_url' => $this->context->link->getModuleLink($this->name, 'front'),

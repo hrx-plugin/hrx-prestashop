@@ -4,7 +4,7 @@
 ### Fixed
 - Fixed mobile phone number get from Order address
 - Fixed delivery method recognition
-- Changed tracking_number length in database to 30 chars
+- Changed tracking_number length in database to 32 chars
 
 ### Improved
 - Added Readme file

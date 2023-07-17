@@ -31,7 +31,7 @@ function upgrade_module_1_0_1($module)
 {
     $db = Db::getInstance();
 
-    $query = "ALTER TABLE `" . _DB_PREFIX_ . "hrx_order` MODIFY COLUMN `tracking_number` varchar(30)";
+    $query = "ALTER TABLE `" . _DB_PREFIX_ . "hrx_order` MODIFY COLUMN `tracking_number` varchar(32)";
     if ( ! $db->execute($query) ) {
         return false;
     }

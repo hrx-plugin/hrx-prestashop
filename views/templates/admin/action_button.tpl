@@ -4,7 +4,7 @@
     {if isset($status) && $status == 'new' || $status == 'ready'}
         <span class="cancel-order float-left">
             <a class="btn btn-danger" data-order="{$id_order}">
-                {l s="Cancel order" mod="hrxdelivery"}
+                {l s="Cancel order" mod='hrxdelivery'}
             </a>
         </span>
     {/if}
@@ -14,7 +14,7 @@
     {if isset($status) && $status == ''}
         <span class="create-order">
             <a class="btn btn-success" data-order="{$id_order}">
-                {l s="Create shipment" mod="hrxdelivery"}
+                {l s="Create shipment" mod='hrxdelivery'}
             </a>
         </span>
     {/if}
@@ -23,7 +23,7 @@
     {if isset($is_table) && $is_table == true && isset($status) && $status == ''}
         <span class="change-order-modal float-left">
             <a class="btn btn-default" data-order="{$id_order}">
-                {l s="Edit" mod="hrxdelivery"}
+                {l s="Edit" mod='hrxdelivery'}
             </a>
         </span>
     {/if}
@@ -33,24 +33,24 @@
         {if $require_return_label}
         <div class="{if isset($is_table) && $is_table == true}dropdown{else}dropup{/if} print-btn">
             <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
-                {l s="Print" mod="hrxdelivery"}&nbsp;<span class="caret"></span>
+                {l s="Print" mod='hrxdelivery'}&nbsp;<span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
                 <li>
                     <a href="#" class="hrx-print-shipment-label"  data-order="{$id_order}">
-                        {l s="Shipment label" mod="hrxdelivery"}
+                        {l s="Shipment label" mod='hrxdelivery'}
                     </a>
                 </li>
                 <li>
                     <a href="#" class="hrx-print-return-label" data-order="{$id_order}">
-                        {l s="Return label" mod="hrxdelivery"}
+                        {l s="Return label" mod='hrxdelivery'}
                     </a>
                 </li>
             </ul>
         </div>
         {else}
             <a href="#" class="hrx-print-shipment-label btn btn-warning"  data-order="{$id_order}">
-                {l s="Print label" mod="hrxdelivery"}
+                {l s="Print label" mod='hrxdelivery'}
             </a>
         {/if}
     {/if}
@@ -59,7 +59,7 @@
     {if isset($status) && $status == 'new'}
         <span class="make-order-ready">
             <a class="btn btn-success" data-order="{$id_order}">
-                {l s="Mark as ready" mod="hrxdelivery"}
+                {l s="Mark as ready" mod='hrxdelivery'}
             </a>
         </span>
     {/if}

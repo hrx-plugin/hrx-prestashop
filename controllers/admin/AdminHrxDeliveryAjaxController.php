@@ -1,5 +1,9 @@
 <?php
 
+use Mijora\Hrx\DVDoug\BoxPacker\ItemList;
+use Mijora\Hrx\DVDoug\BoxPacker\ParcelBox;
+use Mijora\Hrx\DVDoug\BoxPacker\ParcelItem;
+
 require_once "AdminHrxOrderController.php";
 
 class AdminHrxDeliveryAjaxController extends ModuleAdminController
@@ -41,6 +45,12 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 break;
             case 'updateTerminals':
                 $this->updateTerminals();
+                break;
+            case 'updateCourierLocations':
+                $this->updateCourierLocations();
+                break;
+            case 'getAvailableCountries':
+                $this->getAvailableCountries();
                 break;
             case 'updatePriceTable':
                 $this->updatePriceTable();
@@ -94,62 +104,84 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
         $order = new Order($id_order);
         $address = new Address($order->id_address_delivery);
         $country_code = Country::getIsoById($address->id_country);
-        $terminal_info = [];
 
         $kind = Tools::getValue('kind');
 
-        if($kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
-
-            if(!$delivery_location_id)
-            {
-                $result['errors'][] = $this->module->l('Please select a terminal.');
-            }
-            else
-            {
-                $terminal_info = HrxData::getDeliveryLocationInfo($delivery_location_id, $country_code);
-
-                if(!HrxData::isFit($terminal_info, $shipmentData))
-                {
-                    $result['errors'][] = $this->module->l('The parcel does not fit into the parcel terminal. Update the list of terminals and select another terminal.');
-                }
-            }            
+        if(!$shipmentData->length || !$shipmentData->width || !$shipmentData->height || !$shipmentData->weight) {
+            $result['errors'][] = $this->module->l('Parcel dimensions and weight are required.');
         }
-        
-        if(!$pickup_location_id)
-        {
+
+        if($kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']) {
+            if(!$delivery_location_id) {
+                $result['errors'][] = $this->module->l('Please select a terminal.');
+            } else {
+                $delivery_location = new HrxDeliveryTerminal($delivery_location_id);
+            }            
+        } else { // courier
+            $delivery_location = HrxDeliveryCourier::getDeliveryCourierByCountry($country_code);
+        }
+
+        if (Validate::isLoadedObject($delivery_location)) {
+            $item_list = new ItemList();
+            $item_list->insert(
+                new ParcelItem(
+                    $shipmentData->length,
+                    $shipmentData->width,
+                    $shipmentData->height,
+                    $shipmentData->weight,
+                    'custom_parcel'
+                ), 
+                1
+            );
+
+            if (!HrxData::doesParcelFitBox($delivery_location->getParams(), $item_list)) {
+                $result['errors'][] = $this->module->l('Parcel does not fit delivery locations limitations:') 
+                    . ' MIN (cm): ' . HrxData::getMinDimensions($delivery_location->getParams(), true) . ', '
+                    . ' MAX (cm): ' . HrxData::getMaxDimensions($delivery_location->getParams(), true) . ', '
+                    . ' MIN (kg): ' . HrxData::getMinWeight($delivery_location->getParams(), true) . ', '
+                    . ' MAX (kg): ' . HrxData::getMaxWeight($delivery_location->getParams(), true) . '.';
+            }
+        } else {
+            $result['errors'][] = $this->module->l('There was an error trying to determina delivery location');
+        }
+
+        if(!$pickup_location_id) {
             $result['errors'][] = $this->module->l('Please select a warehouse.');
         }
 
-        if(!$shipmentData->length || !$shipmentData->width || !$shipmentData->height || !$shipmentData->weight)
-        {
-            $result['errors'][] = $this->module->l('Parcel dimensions and weight are required.');
-        }
-        
-        if(!isset($result['errors']))
-        {
+        if(!isset($result['errors'])) {
             $obj = new HrxOrder($id_order);
             $obj->id_shop = $this->context->shop->id;
             $obj->pickup_location_id = $pickup_location_id;
             $obj->delivery_location_id = $delivery_location_id;
 
             if($kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind'])
-                $obj->terminal = $terminal_info['address'] . ', ' . $terminal_info['city'] . ', ' . $terminal_info['country'];
+                $obj->terminal = $delivery_location->address . ', ' . $delivery_location->city . ', ' . $delivery_location->country;
             else
                 $obj->terminal = '--';
 
-            $obj->length = $shipmentData->length;
-            $obj->width = $shipmentData->width;
-            $obj->height = $shipmentData->height;
-            $obj->weight = $shipmentData->weight;
-    
+            $packed_box = HrxData::getPackedBox($delivery_location->getParams(), $item_list);
+
+            $min_dimmensions = HrxData::getMinDimensions($delivery_location->getParams());
+
+            $obj->length = max($packed_box->getUsedLength() / 10, $min_dimmensions[ParcelBox::DIMENSION_LENGTH]);
+            $obj->width = max($packed_box->getUsedWidth() / 10, $min_dimmensions[ParcelBox::DIMENSION_WIDTH]);
+            $obj->height = max($packed_box->getUsedDepth() / 10, $min_dimmensions[ParcelBox::DIMENSION_HEIGHT]);
+            $obj->weight = max($packed_box->getWeight() / 1000, HrxData::getMinWeight($delivery_location->getParams()));
+
             $res = $obj->update();
     
-            if($res){
-                $result['success'][] = $this->module->l('Shipment data updated successfully.');
+            if ($res) {
+                $result['success'][] = $this->module->l('Shipment data updated successfully. Parcel size addapted to location limits');
                 $result['data']['terminal'] = $obj->terminal;
                 $result['data']['warehouse'] = HrxWarehouse::getName($pickup_location_id);
-            }
-            else{
+                $result['data']['dimmensions'] = [
+                    'HRX_DEFAULT_LENGTH' => $obj->length,
+                    'HRX_DEFAULT_WIDTH' => $obj->width,
+                    'HRX_DEFAULT_HEIGHT' => $obj->height,
+                    'HRX_DEFAULT_WEIGHT' => $obj->weight,
+                ];
+            } else {
                 $result['errors'][] = $this->module->l('Failed to update shipment data.');
             }
         }
@@ -172,10 +204,11 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
         $shipmentData->height = (float) Tools::getValue('HRX_DEFAULT_HEIGHT');
         $shipmentData->weight = (float) Tools::getValue('HRX_DEFAULT_WEIGHT');
 
-        $selected_terminal = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
-
+        $selected_terminal = null;
+        
         $terminals = [];
         if($hrxOrder->kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
+            $selected_terminal = new HrxDeliveryTerminal($hrxOrder->delivery_location_id);
             $terminals = HrxData::getTerminalsByDimensionsAndCity($country_code, $shipmentData, $selected_terminal);
         }
         
@@ -183,8 +216,7 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
 
         if($terminals)
         {
-            $selected_terminal = $hrxOrder->delivery_location_id;
-            $html = self::generateTerminalList($terminals, $selected_terminal);
+            $html = self::generateTerminalList($terminals, $hrxOrder->delivery_location_id);
         }else{
             $html = ' <div class="alert alert-warning" role="alert">'. $this->module->l('There are no terminals for the specified shipment sizes') .'</div>';
         }
@@ -219,29 +251,24 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
         $label_type = Tools::getValue('type');
         $default_file_name = $label_type . '_' . $id_order . '.pdf';
 
-        if($label_type == 'shipment')
-            $label_directory = HrxDelivery::$_labelPdfDir;
-        else 
+        if ($label_type == 'shipment')
+        $label_directory = HrxDelivery::$_labelPdfDir;
+        else
             $label_directory = HrxDelivery::$_returnLabelPdfDir;
 
         $hrxOrder = new HrxOrder($id_order);
-        if(Validate::isLoadedObject($hrxOrder))
-        {
+
+        if (Validate::isLoadedObject($hrxOrder)) {
             $response = HrxAPIHelper::getLabel($label_type, $hrxOrder->id_hrx);
 
-            if(isset($response['error']))
-            {
+            if (isset($response['error'])) {
                 $result['errors'] = $response['error'];
-            }
-            else
-            {
+            } else {
                 $file_content = $response['file_content'] ?? '';
                 $file_name = $response['file_name'] ?? $default_file_name;
-                $file_path =  _PS_MODULE_DIR_ . $label_directory . $file_name;
-                //$data = base64_encode($file_content);
-                file_put_contents($file_path, base64_decode($file_content));
                 $result['success'][] = 'Order shipping label generated successfully';
-                $result['data']['url'] = _PS_BASE_URL_ . '/modules/' . $label_directory . $file_name;
+                $result['data']['pdfBase64'] = $file_content;
+                $result['data']['filename'] = $file_name;
             }
         }
 
@@ -259,10 +286,13 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
             
             $address = new Address($order->id_address_delivery);
             $country_code = Country::getIsoById($address->id_country);
-            $selected_terminal = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
-
+            // $selected_terminal = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
+            
+            $selected_terminal = null;
             $terminalsByCities = [];
             if($hrxOrder->kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
+                $selected_terminal = new HrxDeliveryTerminal($hrxOrder->delivery_location_id);
+
                 $terminalsByCities = HrxData::getTerminalsByDimensionsAndCity($country_code, $hrxOrder, $selected_terminal);
             }
 
@@ -317,7 +347,9 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 'select_warehouse' => $this->l('Please select warehouse'),
             ]);
 
-            die(json_encode(['modal' => $this->context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/order_modal.tpl')]));
+            die(json_encode([
+                'modal' => $this->context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/order_modal.tpl')
+            ]));
         }
     }
 
@@ -342,20 +374,19 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 $result['errors'][] = $this->module->l('Warehouse is required.');
             }
 
-            if($hrxOrder->kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind'])
-            {
-                $delivery_location = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
-                if(!$delivery_location){
+            if($hrxOrder->kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']) {
+                // $delivery_location = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
+                $delivery_location = new HrxDeliveryTerminal($hrxOrder->delivery_location_id);
+                if(!Validate::isLoadedObject($delivery_location)){
                     $result['errors'][] = $this->module->l('Parcel terminal is required.');
                 }
-            }
-            else
-            {
-                $delivery_location = HrxData::getCourierDeliveryLocation($country_code);
+            } else {
+                // $delivery_location = HrxData::getCourierDeliveryLocation($country_code);
+                $delivery_location = HrxDeliveryCourier::getDeliveryCourierByCountry($country_code);
             }
             
-            $phone_patern = $delivery_location['recipient_phone_regexp'] ?? '';
-            $phone_prefix = $delivery_location['recipient_phone_prefix'] ?? '';
+            $phone_patern = $delivery_location->getParams()['recipient_phone_regexp'] ?? '';
+            $phone_prefix = $delivery_location->getParams()['recipient_phone_prefix'] ?? '';
             $phone = (!empty($address->phone_mobile)) ? $address->phone_mobile : $address->phone;
             $phone = self::preparePhoneNumber($phone, $phone_prefix, $phone_patern);
             if(!$phone){
@@ -502,18 +533,52 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
         die(json_encode($result)); 
     }
 
-    private function updatePriceTable()
+    private function updateCourierLocations()
     {
-        $data = Tools::getValue('data');
+        $page = 1;
+        if(Tools::getIsset('page')){
+            $page = Tools::getValue('page');
+        }
+        $counter = (int) (Tools::getValue('counter') ?? 0);
+        $response = HrxData::updateCourierPoints($page);
 
-        $result = HrxShippingPrice::updateTable($data);
+        $result = [];
 
-        if($result){
-            $res['success'] = $this->module->l('Shipping price table updated successfully.');
-        }else{
-            $res['error'] = $this->module->l('Something went wrong.');
+        if(isset($response['error'])){
+            $result['error'] = $response['error'];
         }
 
-        die(json_encode($res)); 
+        if(isset($response['counter']))
+        {
+            $result = [
+                'counter' => ($counter + $response['counter']),
+            ];
+        }
+
+        if(!$response)
+        {
+            $result['counter'] = $counter;
+        }
+
+        die(json_encode($result)); 
+    }
+
+    private function getAvailableCountries()
+    {
+        $type = Tools::getValue('type');
+
+        if (!in_array($type, ['terminal', 'courier'])) {
+            die(json_encode([]));
+        }
+
+        $context = Context::getContext();
+        $context->smarty->assign([
+            'hrx_available_countries' => $type === 'terminal' ? HrxDeliveryTerminal::getAvailableCountries() : HrxDeliveryCourier::getAvailableCountries(),
+            ]
+        );
+
+        die(json_encode([
+            'html' => $context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/available_countries.tpl')
+        ]));
     }
 }

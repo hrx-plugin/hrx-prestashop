@@ -1,6 +1,11 @@
 <?php
 
 use \setasign\Fpdi\Fpdi;
+use Mijora\Hrx\DVDoug\BoxPacker\ItemList;
+use Mijora\Hrx\DVDoug\BoxPacker\PackedBox;
+use Mijora\Hrx\DVDoug\BoxPacker\ParcelBox;
+use Mijora\Hrx\DVDoug\BoxPacker\ParcelItem;
+use Mijora\Hrx\DVDoug\BoxPacker\VolumePacker;
 
 class HrxData
 {
@@ -19,53 +24,62 @@ class HrxData
 
     public static function updateTerminals($page)
     {
-        if($page == 1){
+        if ($page == 1) {
+            HrxDeliveryTerminal::disableAll();
             Tools::deleteDirectory(HrxDelivery::$_moduleDir . self::$_terminalsList['directory']);
             mkdir(HrxDelivery::$_moduleDir . self::$_terminalsList['directory'], 0777, true);
         }
         $locations_by_country = [];
         $result = HrxAPIHelper::getDeliveryLocations($page);
 
-        if(isset($result['error']))
-            return $result;
+        if (isset($result['error']))
+        return $result;
 
-        if(!$result || empty($result))
+        if (!$result || empty($result))
             return false;
 
-        foreach($result as $terminal)
-        {
-            if(isset($terminal['country']) && (int)$terminal['latitude'] != 0 && (int)$terminal['longitude'] != 0)
-            {
+        $db_push = [];
+        foreach ($result as $terminal) {
+            if (isset($terminal['country']) && (int)$terminal['latitude'] != 0 && (int)$terminal['longitude'] != 0) {
                 $terminal['identifier'] = 'hrx_' . strtolower($terminal['country']);
                 $terminal['coords']['lat'] = $terminal['latitude'];
                 $terminal['coords']['lng'] = $terminal['longitude'];
                 $locations_by_country[$terminal['country']][$terminal['id']] = $terminal;
+
+                $db_push[] = $terminal;
             }
         }
 
-        if($locations_by_country)
-        {
-            foreach($locations_by_country as $country_code => $terminals)
-            {
-                $file_path = self::getFileDir(self::$_terminalsList['directory'], str_replace('%s', strtoupper($country_code), self::$_terminalsList['file_name']));
-                $data_array = [];
+        HrxDeliveryTerminal::massAdd($db_push);
 
-                if(file_exists($file_path)){
-                    $old_data = file_get_contents($file_path);
-                    if($old_data){
-                        $data_array = json_decode($old_data, true);
-                    }
-                }
-
-                $all_terminals = array_merge($data_array, $terminals);
-
-                $json_data = json_encode($all_terminals);
-                file_put_contents($file_path, $json_data);
-            }
-        }
         $counter = count($result);
 
         return ['counter' => $counter];
+    }
+
+    public static function updateCourierPoints($page)
+    {
+        if ($page == 1) {
+            HrxDeliveryCourier::disableAll();
+        }
+
+        $result = HrxAPIHelper::getCourierDeliveryLocations();
+
+        if (isset($result['error']))
+        return $result;
+
+        if (!$result || empty($result))
+            return false;
+
+        $result = array_filter($result, function ($item) {
+            return isset($item['country']) && $item['country'];
+        });
+
+        HrxDeliveryCourier::massAdd($result);
+
+        return [
+            'counter' => count($result)
+        ];
     }
 
     public static function updateWarehouses($forced = false)
@@ -99,59 +113,37 @@ class HrxData
         return $res;
     }
 
-    public static function getTerminalsByCountry($country_code)
+    public static function getTerminalsByCountry($country_code, $item_list = null)
     {
-        $file_path = self::getFileDir(self::$_terminalsList['directory'], str_replace('%s', strtoupper($country_code), self::$_terminalsList['file_name']));
-        if(file_exists($file_path)){
-            $result = file_get_contents($file_path);
-
-            $terminals = json_decode($result, true);
-
-            if($terminals){
-                return array_values($terminals);
-            }
-        }
-        return [];
-    }
-
-    public static function getCourierDeliveryLocation($country_code)
-    {
-        $file_path = self::getFileDir(self::$_courierDeliveryLocations['directory'], self::$_courierDeliveryLocations['file_name']);
-
-        if(!file_exists($file_path)){
-            $delivery_locations = HrxAPIHelper::getCourierDeliveryLocations();
-            if(!isset($delivery_locations['errors']))
-            {
-                $json_data = json_encode($delivery_locations);
-                file_put_contents($file_path, $json_data);
-            }
-        }
-
-        $result = file_get_contents($file_path);
-
-        $lcoations = json_decode($result, true);
-
-        foreach($lcoations as $lcoation)
-        {
-            if($lcoation['country'] == $country_code)
-                return $lcoation;
-        }
-
-        return [];
+        return HrxDeliveryTerminal::getLocationListByCountry($country_code);
     }
 
     /**
      * @param string $country_code
      * @param Object $order with package dimensions info
      */
-    public static function getTerminalsByDimensionsAndCity($country_code, $order, $selected)
+    public static function getTerminalsByDimensionsAndCity($country_code, $order, $selected = null)
     {
         $terminals = self::getTerminalsByCountry($country_code);
+        
+        if (!$selected || !isset($selected->latitude) || !isset($selected->longitude)) {
+            return $terminals;
+        }
+
         $filtered_terminals = [];
+
+        // look around from currently selected terminal
+        $lat_min = $selected->latitude - 0.25;
+        $lat_max = $selected->latitude + 0.25;
+        $lng_min = $selected->longitude - 0.5;
+        $lng_max = $selected->longitude + 0.5;
 
         foreach($terminals as $terminal)
         {
-            if($selected['city'] == $terminal['city'] && self::isFit($terminal, $order)){
+            if(
+                (float) $terminal['latitude'] >= $lat_min && (float) $terminal['latitude'] <= $lat_max
+                && (float) $terminal['longitude'] >= $lng_min && (float) $terminal['longitude'] <= $lng_max
+            ){
                 $filtered_terminals[$terminal['id']] = $terminal;
             }
         }
@@ -184,21 +176,133 @@ class HrxData
         return $matches[0];
     }
 
-    public static function isFit($terminal, $order)
+    public static function getItemListFromProductList($cart_products)
     {
-        if(isset($terminal['min_length_cm']) && $order->length < $terminal['min_length_cm']
-            || isset($terminal['min_width_cm']) && $order->width < $terminal['min_width_cm']
-            || isset($terminal['min_height_cm']) && $order->height < $terminal['min_height_cm']
-            || isset($terminal['min_weight_kg']) && $order->weight < $terminal['min_weight_kg']
-            || isset($terminal['max_length_cm']) && $order->length > $terminal['max_height_cm']
-            || isset($terminal['max_width_cm']) && $order->width > $terminal['max_width_cm']
-            || isset($terminal['max_height_cm']) && $order->height > $terminal['max_height_cm']
-            || isset($terminal['max_weight_kg']) && $order->weight > $terminal['max_weight_kg'])
-        {
-            return false;
+        $item_list = new ItemList();
+        $convert_to_cm = Configuration::get('PS_DIMENSION_UNIT') === 'm' ? 100 : 1;
+
+        $default_dimmensions = HrxData::getDefaultDimmensions();
+
+        foreach ($cart_products as $cart_product) {
+            // ignore virtual products
+            if (isset($cart_product['is_virtual']) && (bool) $cart_product['is_virtual']) {
+                continue;
+            }
+
+            $weight = (float) $cart_product['weight'];
+            if (isset($cart_product['weight_attribute']) && $cart_product['weight_attribute'] > 0) {
+                $weight = (float) $cart_product['weight_attribute'];
+            }
+
+            $dimmensions = HrxData::determineProductDimensions([
+                ParcelBox::DIMENSION_WIDTH => (float) $cart_product['width'] * $convert_to_cm,
+                ParcelBox::DIMENSION_HEIGHT => (float) $cart_product['height'] * $convert_to_cm,
+                ParcelBox::DIMENSION_LENGTH => (float) $cart_product['depth'] * $convert_to_cm,
+                ParcelBox::DIMENSION_WEIGHT => $weight,
+            ], $default_dimmensions);
+
+            $item_list->insert(
+                new ParcelItem(
+                    $dimmensions[ParcelBox::DIMENSION_LENGTH],
+                    $dimmensions[ParcelBox::DIMENSION_WIDTH],
+                    $dimmensions[ParcelBox::DIMENSION_HEIGHT],
+                    $dimmensions[ParcelBox::DIMENSION_WEIGHT],
+                    'product_' . $cart_product['id_product'] . '-' . $cart_product['id_product_attribute']
+                ),
+                (int) $cart_product['cart_quantity']
+            );
         }
 
-        return true;
+        return $item_list;
+    }
+
+    public static function getDefaultDimmensions()
+    {
+        return [
+            ParcelBox::DIMENSION_WIDTH => Configuration::get(HrxDelivery::$_configKeys['DELIVERY']['w']), 
+            ParcelBox::DIMENSION_HEIGHT => Configuration::get(HrxDelivery::$_configKeys['DELIVERY']['h']), 
+            ParcelBox::DIMENSION_LENGTH => Configuration::get(HrxDelivery::$_configKeys['DELIVERY']['l']),
+            ParcelBox::DIMENSION_WEIGHT => Configuration::get(HrxDelivery::$_configKeys['DELIVERY']['weight']),
+        ];
+    }
+
+    public static function determineProductDimensions($product_dimmensions, $default_dimmensions = null)
+    {
+        if (!$default_dimmensions) {
+            $default_dimmensions = self::getDefaultDimmensions();
+        }
+
+        return [
+            ParcelBox::DIMENSION_WIDTH => $product_dimmensions[ParcelBox::DIMENSION_WIDTH] ? $product_dimmensions[ParcelBox::DIMENSION_WIDTH] : $default_dimmensions[ParcelBox::DIMENSION_WIDTH],
+            ParcelBox::DIMENSION_HEIGHT => $product_dimmensions[ParcelBox::DIMENSION_HEIGHT] ? $product_dimmensions[ParcelBox::DIMENSION_HEIGHT] : $default_dimmensions[ParcelBox::DIMENSION_HEIGHT],
+            ParcelBox::DIMENSION_LENGTH => $product_dimmensions[ParcelBox::DIMENSION_LENGTH] ? $product_dimmensions[ParcelBox::DIMENSION_LENGTH] : $default_dimmensions[ParcelBox::DIMENSION_LENGTH],
+            ParcelBox::DIMENSION_WEIGHT => $product_dimmensions[ParcelBox::DIMENSION_WEIGHT] ? $product_dimmensions[ParcelBox::DIMENSION_WEIGHT] : $default_dimmensions[ParcelBox::DIMENSION_WEIGHT],
+        ];
+    }
+
+    public static function getMinWeight($location)
+    {
+        return (float) (isset($location['min_weight_kg']) ? $location['min_weight_kg'] : 0);
+    }
+
+    public static function getMaxWeight($location)
+    {
+        return (float) (isset($location['max_weight_kg']) ? $location['max_weight_kg'] : 0);
+    }
+
+    public static function getMinDimensions($location, $formated = false)
+    {
+        $length = (float) (isset($location['min_length_cm']) ? $location['min_length_cm'] : 0);
+        $width = (float) (isset($location['min_width_cm']) ? $location['min_width_cm'] : 0);
+        $height = (float) (isset($location['min_height_cm']) ? $location['min_height_cm'] : 0);
+
+        return $formated ? "$length x $width x $height" : [
+            ParcelBox::DIMENSION_LENGTH => $length,
+            ParcelBox::DIMENSION_WIDTH => $width,
+            ParcelBox::DIMENSION_HEIGHT => $height
+        ];
+    }
+
+    public static function getMaxDimensions($location, $formated = false)
+    {
+        $length = (float) (isset($location['max_length_cm']) ? $location['max_length_cm'] : 0);
+        $width = (float) (isset($location['max_width_cm']) ? $location['max_width_cm'] : 0);
+        $height = (float) (isset($location['max_height_cm']) ? $location['max_height_cm'] : 0);
+
+        return $formated ? "$length x $width x $height" : [
+            ParcelBox::DIMENSION_LENGTH => $length,
+            ParcelBox::DIMENSION_WIDTH => $width,
+            ParcelBox::DIMENSION_HEIGHT => $height
+        ];
+    }
+
+    public static function getPackedBox($delivery_point, ItemList $item_list): PackedBox
+    {
+        $dimensions_array = self::getMaxDimensions($delivery_point, false);
+
+        $max_length = $dimensions_array[ParcelBox::DIMENSION_LENGTH] === 0.0 ? ParcelBox::UNLIMITED : $dimensions_array[ParcelBox::DIMENSION_LENGTH];
+        $max_width = $dimensions_array[ParcelBox::DIMENSION_WIDTH] === 0.0 ? ParcelBox::UNLIMITED : $dimensions_array[ParcelBox::DIMENSION_WIDTH];
+        $max_height = $dimensions_array[ParcelBox::DIMENSION_HEIGHT] === 0.0 ? ParcelBox::UNLIMITED : $dimensions_array[ParcelBox::DIMENSION_HEIGHT];
+        $max_weight = self::getMaxWeight($delivery_point) === 0.0 ? ParcelBox::UNLIMITED : self::getMaxWeight($delivery_point);
+
+        $box = new ParcelBox(
+            $max_length,
+            $max_width,
+            $max_height,
+            $max_weight,
+            self::getMaxDimensions($delivery_point, true) . ' ' . $max_weight // using formated dimensions string as reference + max weight
+        );
+
+        $packer = new VolumePacker($box, $item_list);
+
+        return $packer->pack();
+    }
+
+    public static function doesParcelFitBox($delivery_point, ItemList $item_list)
+    {
+        $packed_box = self::getPackedBox($delivery_point, $item_list);
+
+        return $packed_box->getItems()->count() === $item_list->count();
     }
 
     public static function bulkPrintLabels($order_ids, $label_type)
@@ -239,9 +343,8 @@ class HrxData
 
         $filename = implode(",", $order_ids) . '.pdf';
         $file_path =  _PS_MODULE_DIR_ . $label_directory . $filename;
-        file_put_contents($file_path, $res);
 
-        self::printPdf($file_path, $filename);
+        self::printPdf($file_path, $filename, $res);
     }
 
     private static function mergePdf($pdfs) {
@@ -267,7 +370,7 @@ class HrxData
         return $pdf->Output('S');
     }
 
-    private static function printPdf($path, $filename)
+    private static function printPdf($path, $filename, $pdf_data)
     {
         // make sure there is nothing before headers
         if (ob_get_level()) ob_end_clean();
@@ -277,6 +380,6 @@ class HrxData
         header("Expires: 0");
         header("Cache-Control: no-cache, must-revalidate");
         header("Pragma: no-cache");
-        readfile($path);
+        echo $pdf_data;
     }
 }

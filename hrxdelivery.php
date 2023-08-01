@@ -170,7 +170,7 @@ class HrxDelivery extends CarrierModule
             'type' => 'pickup',
             'id_name' => 'HRX_PICKUP_ID',
             'reference_name' => 'HRX_PICKUP_ID_REFERENCE',
-            'title' => 'HRX parcel terminal',
+            'title' => 'Parcel terminal',
             'image' => 'logo.png',
             'kind' => 'delivery_location'
         ),
@@ -178,7 +178,7 @@ class HrxDelivery extends CarrierModule
             'type' => 'courier',
             'id_name' => 'HRX_COURIER_ID',
             'reference_name' => 'HRX_COURIER_ID_REFERENCE',
-            'title' => 'HRX courier',
+            'title' => 'Courier',
             'image' => 'logo.png',
             'kind' => 'courier'
         ),

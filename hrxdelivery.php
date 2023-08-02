@@ -796,7 +796,7 @@ class HrxDelivery extends CarrierModule
         if ($add_content)
         {
             Media::addJsDef(array(
-                    'images_url' => $this->_path . 'dist/images/',
+                    'hrx_images_url' => $this->_path . 'views/img/',
                 )
             );
             if(version_compare(_PS_VERSION_, '1.7', '>=')){               
@@ -1180,28 +1180,26 @@ class HrxDelivery extends CarrierModule
      */
     public function hookDisplayCarrierExtraContent($params)
     {
-        $carrier = new Carrier($this->id_carrier);
-        $carrier_id_reference = $carrier->id_reference;
-
-        $carrier_type = $this->getCarrierType($carrier_id_reference);
-
-        $address = new Address($params['cart']->id_address_delivery);
-        $country_code = Country::getIsoById($address->id_country);
-
-        if (empty($country_code)) {
-            return '';
-        }
-
-        if($carrier_type == 'courier')
-        {
+        $address = new Address($params['cart']->id_address_delivery ?? null);
+        if (!$address) {
             return;
         }
 
-        $terminals = HrxData::getTerminalsByCountry($country_code);
- 
-        if (!$terminals || empty($terminals)) {
-            return '';
+        $country_code = Country::getIsoById($address->id_country);
+
+        if (empty($country_code)) {
+            return;
         }
+
+        // 1.7 and up has carrier in $params and is called for each option, extra content is needed for terminals only
+        if (version_compare(_PS_VERSION_, '1.7', '>=')) {
+            $carrier_id_reference = isset($params['carrier']['id_reference']) ? $params['carrier']['id_reference'] : null;
+            $carrier_type = $this->getCarrierType($carrier_id_reference);
+            if($carrier_type == 'courier') {
+                return;
+            }
+        }
+
         $selected_terminal_id = HrxCartTerminal::getTerminalIdByCart($params['cart']->id);
 
         $this->context->smarty->assign(
@@ -1215,7 +1213,6 @@ class HrxDelivery extends CarrierModule
         );
         
         return $this->display(__FILE__, 'displayCarrierExtraContent.tpl');
-        
     }
 
     private function getCarrierType($carrier_id_reference)

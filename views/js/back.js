@@ -49,7 +49,7 @@ $(document).ready(function() {
         createOrder(id_order, 'order-page');
     });
 
-    $(document).on('click', '#table-hrx_order .create-order a', function(e) {
+    $(document).on('click', '.table.hrx_order .create-order a', function(e) {
         e.preventDefault();
         var id_order = $(this).attr('data-order');
         createOrder(id_order, 'table');

@@ -13,6 +13,7 @@
 
 ### Fixed
 - Fixed missing translatable strings bindings to module
+- Various improvements / changes / cleanup
 
 ### Updated
 - Updated setasign/fpdi to 2.4.1

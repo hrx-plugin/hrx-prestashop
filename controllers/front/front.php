@@ -1,4 +1,10 @@
 <?php
+
+use Mijora\Hrx\DVDoug\BoxPacker\ItemList;
+use Mijora\Hrx\DVDoug\BoxPacker\ParcelBox;
+use Mijora\Hrx\DVDoug\BoxPacker\ParcelItem;
+use Mijora\Hrx\DVDoug\BoxPacker\VolumePacker;
+
 class HrxDeliveryFrontModuleFrontController extends ModuleFrontController
 {
     public function initContent()
@@ -49,13 +55,32 @@ class HrxDeliveryFrontModuleFrontController extends ModuleFrontController
 
     public function getTerminals()
     {
-        $address = new Address($this->context->cart->id_address_delivery);
+        $cart = $this->context->cart;
+
+        $address = new Address($cart->id_address_delivery);
         $country_code = Country::getIsoById($address->id_country);
 
         if (empty($country_code)) {
             return [];
         }
 
-        return HrxData::getTerminalsByCountry($country_code);
+        $item_list = HrxData::getItemListFromProductList($cart->getProducts(false, false));
+
+        $terminal_list = HrxData::getTerminalsByCountry($country_code);
+
+        $can_fit = [];
+
+        $terminal_list = array_filter($terminal_list, function($terminal) use ($item_list, &$can_fit) {
+            $location_max_weight = HrxData::getMaxWeight($terminal);
+            $box_key = HrxData::getMaxDimensions($terminal, true) . ' ' . $location_max_weight; // to cache result for this kind of dimension box
+
+            if (!isset($can_fit[$box_key])) {
+                $can_fit[$box_key] = HrxData::doesParcelFitBox($terminal, $item_list);
+            }
+
+            return $can_fit[$box_key];
+        });
+
+        return $terminal_list;
     }
 }

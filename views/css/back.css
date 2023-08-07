@@ -192,7 +192,8 @@
     min-width: 131px;
     justify-content: space-between;
 }
-.loader {
+
+.hrx-loader {
     margin-left: 10px;
     display: none;
     border: 5px solid #f3f3f3;
@@ -202,6 +203,26 @@
     height: 30px;
     -webkit-animation: spin 2s linear infinite; /* Safari */
     animation: spin 2s linear infinite;
+}
+
+#desc-hrx_delivery_courier-new {
+    display: none;
+}
+
+[data-available-countries] {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-gap: 1rem;
+    grid-auto-flow: dense;
+}
+
+[data-available-countries] > li {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
 }
 
 /* Safari */

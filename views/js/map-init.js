@@ -28,6 +28,7 @@ var hrx_custom_modal = function()
     if (typeof(hrx_map_container) != 'undefined' && hrx_map_container != null) {
 
         hrx_tmjs = new TerminalMappingHrx();
+        hrx_tmjs.prefix = '[HRX_TMJS] ';
         hrx_tmjs.setImagesPath(hrx_imgs_url);
         hrx_tmjs.setTranslation(hrx_terminal_map_translations);
 
@@ -92,7 +93,7 @@ var hrx_custom_modal = function()
 
     }
     // hrx_tmjs.removeOverlay();
-    //window['hrx_custom_modal'].hrx_tmjs = hrx_tmjs;
+    window['hrx_custom_modal'].hrx_tmjs = hrx_tmjs;
 }
 
 function registeSelectedrHrxTerminal(action, terminal_id) {

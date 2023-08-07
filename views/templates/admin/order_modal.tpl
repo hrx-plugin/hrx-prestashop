@@ -10,7 +10,7 @@
                 <div class="modal-header">
                     <a class="close" data-dismiss="modal" >&times;</a>
                     <h3 class="modal-title">
-                        {l s='Order #%1$d' sprintf=$id_order mod='mijorapriorityproducts'}
+                        {l s='Order #%1$d' sprintf=$id_order mod='hrxdelivery'}
 
                         <div class="col-6 tracking-number">
                             {if isset($tracking)}
@@ -31,22 +31,22 @@
                                 {* terminal settings *}
                                 {if $kind == 'delivery_location'}
                                 <div class="form-group delivery-settings">
-                                    <label class="control-label col-lg-2 dimension-group">{l s="Parcel terminal" mod="hrxdelivery"}</label>
+                                    <label class="control-label col-lg-2 dimension-group">{l s="Parcel terminal" mod='hrxdelivery'}</label>
                                     <div class="col-lg-9 dimensions-wrapper" id="terminals">
                                         {if isset($terminals) && !empty($terminals)}
                                             <select name="delivery_location_id" id="delivery_location_id" class="custom-select">
                                                 {foreach from=$terminals item=field}
-                                                    <option value="{$field.id}" {if isset($selected_terminal.id) && $field.id == $selected_terminal.id}selected{/if}>
+                                                    <option value="{$field.id}" {if isset($selected_terminal->id_terminal) && $field.id == $selected_terminal->id_terminal}selected{/if}>
                                                         {$field.address}, {$field.city}, {$field.country}
                                                     </option>
                                                 {/foreach}
                                             </select>
                                         {else}
                                             <div class="alert alert-warning" role="alert">
-                                                {if isset($selected_terminal.address)}
-                                                    {l s="Customer selelcted:"} {$selected_terminal.address}, {$selected_terminal.city}, {$selected_terminal.country}. <br>
+                                                {if isset($selected_terminal->address)}
+                                                    {l s="Customer selelcted:" mod='hrxdelivery'} {$selected_terminal->address}, {$selected_terminal->city}, {$selected_terminal->country}. <br>
                                                 {/if}
-                                                {l s="There are no terminals for the specified shipment sizes."}
+                                                {l s="There are no terminals for the specified shipment sizes." mod='hrxdelivery'}
                                             </div>
                                         {/if}
                                     </div>
@@ -58,7 +58,7 @@
                                 {* warehouse settings *}
                                 {if isset($warehouses) && !empty($warehouses)}
                                 <div class="form-group delivery-settings">
-                                    <label class="control-label col-lg-2 dimension-group">{l s="Warehouse" mod="hrxdelivery"}</label>
+                                    <label class="control-label col-lg-2 dimension-group">{l s="Warehouse" mod='hrxdelivery'}</label>
                                     <div class="col-lg-9 dimensions-wrapper">
                                         <select name="pickup_location_id" id="pickup_location_id" class="custom-select">
                                             <option value="0" selected="true" disabled="disabled">{$select_warehouse}</option>
@@ -72,13 +72,13 @@
                                 </div>
                                 {else}
                                     <div class="alert alert-warning" role="alert">
-                                        {l s="There are no warehouses"}
+                                        {l s="There are no warehouses" mod='hrxdelivery'}
                                     </div>
                                 {/if}
 
                                 {* dimension settings *}
                                 <div class="form-group delivery-settings">
-                                    <label class="control-label col-lg-2 dimension-group">{l s="Parcel size" mod="hrxdelivery"}</label>
+                                    <label class="control-label col-lg-2 dimension-group">{l s="Parcel size" mod='hrxdelivery'}</label>
                                     <div class="col-lg-9 dimensions-wrapper">
                                         {foreach from=$dimensions_fields item=field}
                                             <div class="form-group{if isset($field.class)} {$field.class}{/if}">
@@ -97,7 +97,7 @@
 
                                 {* weight settings *}
                                 <div class="form-group delivery-settings">
-                                    <label class="control-label col-lg-2 dimension-group">{l s="Parcel weight" mod="hrxdelivery"}</label>
+                                    <label class="control-label col-lg-2 dimension-group">{l s="Parcel weight" mod='hrxdelivery'}</label>
                                     
                                     <div class="col-lg-9 dimensions-wrapper">
                                         

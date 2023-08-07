@@ -45,6 +45,12 @@
 .hrx.tmjs-modal a.tmjs-geolocation-btn span{
     padding-left: 7px;
 }
+
+body#checkout section.checkout-step .delivery-options > .row:has(.hrx-pp-container) {
+    margin-bottom: 1em;
+    margin-top: -1em;
+}
+
 body#checkout .hrx.tmjs-modal a.tmjs-geolocation-btn:hover{
     color: #E82C2A;
 }

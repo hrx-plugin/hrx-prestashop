@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.1] - Optimum
+### Added
+- Courier delivery locations synchronization (module settings) and limitations
+- Terminal delivery locations synchronization (module settings) and limitations
+- BoxPacker by DVDoug to determine if cart products fits within given limits
+
+### Changes
+- Changed how costs are controlled, it is now done throug Prestashop -> Carrier settings
+- Generated PDF's are either downloaded or openend in browser wihtout saving server side
+- Terminal data no longer saved in JSON files
+
+### Fixed
+- Fixed missing translatable strings bindings to module
+
+### Updated
+- Updated setasign/fpdi to 2.4.1
+- Updated setasign/fpdf to 1.86
+- Updated terminal-mapping to 1.2.3
+- Updated HRX api-lib to 1.0.3 
+
 ## [1.0.1] - 2023-07-17
 ### Fixed
 - Fixed mobile phone number get from Order address

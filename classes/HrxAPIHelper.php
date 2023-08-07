@@ -30,7 +30,9 @@ class HrxAPIHelper
     {
         try {
             $instance = self::getInstance();
+            $instance->setTimeout(30); // set longer timeout for sync
             $response = $instance->getPickupLocations($page);
+            $instance->setTimeout(15); // set default timeout
         }
         catch (Exception $e)
         {
@@ -97,7 +99,7 @@ class HrxAPIHelper
             $receiver = new Receiver();
             $receiver->setName($customerData['name']);
             $receiver->setEmail($customerData['email']);
-            $receiver->setPhone($customerData['phone'], $delivery_location['recipient_phone_regexp']);
+            $receiver->setPhone($customerData['phone'], $delivery_location->getParams()['recipient_phone_regexp'] ?? '');
             $receiver->setPostcode($customerData['postcode']);
             $receiver->setCity($customerData['city']);
             $receiver->setCountry($customerData['country']);
@@ -115,7 +117,7 @@ class HrxAPIHelper
             $order->setPickupLocationId($pickup_location_id);
 
             if($kind == HrxDelivery::$_carriers[HrxDelivery::CARRIER_TYPE_PICKUP]['kind']){
-                $order->setDeliveryLocation($delivery_location['id']);
+                $order->setDeliveryLocation($delivery_location->id_terminal);
             }
 
             $order->setReceiver($receiver);
@@ -159,7 +161,9 @@ class HrxAPIHelper
     {
         try {
             $instance = self::getInstance();
+            $instance->setTimeout(30); // set longer timeout for sync
             $response = $instance->getCourierDeliveryLocations();
+            $instance->setTimeout(15); // set default timeout
         }
         catch (Exception $e)
         {

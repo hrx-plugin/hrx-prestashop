@@ -11,6 +11,7 @@
  *  @copyright 2013-2022 Mijora
  *  @license   license.txt
  *}
+ {*
 <div class="hrx">
     <div class="response">
     </div>
@@ -27,9 +28,9 @@
                 <div class="col-lg-8">
                     <span class="switch prestashop-switch fixed-width-lg">
                         <input type="radio" name="{$config_fields['use_tax_table']['name']}" id="{$config_fields['use_tax_table']['name']}_on" value="1" {if {$config_fields['use_tax_table']['value']} }checked="checked"{/if}>
-                        <label for="{$config_fields['use_tax_table']['name']}_on">{l s="Enabled"}</label>
+                        <label for="{$config_fields['use_tax_table']['name']}_on">{l s="Enabled" mod='hrxdelivery'}</label>
                         <input type="radio" name="{$config_fields['use_tax_table']['name']}" id="{$config_fields['use_tax_table']['name']}_off" value="" {if {$config_fields['use_tax_table']['value']} == false }checked="checked"{/if}>
-                        <label for="{$config_fields['use_tax_table']['name']}_off">{l s="Disabled"}</label>
+                        <label for="{$config_fields['use_tax_table']['name']}_off">{l s="Disabled" mod='hrxdelivery'}</label>
                         <a class="slide-button btn"></a>
                     </span>
                     <p class="help-block">
@@ -61,9 +62,9 @@
                 <div class="col-lg-8">
                     <span class="switch prestashop-switch fixed-width-lg">
                         <input type="radio" name="{$config_fields['or_amount']['name']}" id="{$config_fields['or_amount']['name']}_on" value="1" {if {$config_fields['or_amount']['value']} }checked="checked"{/if}>
-                        <label for="{$config_fields['or_amount']['name']}_on">{l s="Enabled"}</label>
+                        <label for="{$config_fields['or_amount']['name']}_on">{l s="Enabled" mod='hrxdelivery'}</label>
                         <input type="radio" name="{$config_fields['or_amount']['name']}" id="{$config_fields['or_amount']['name']}_off" value="" {if {$config_fields['or_amount']['value']} == false}checked="checked"{/if}>
-                        <label for="{$config_fields['or_amount']['name']}_off">{l s="Disabled"}</label>
+                        <label for="{$config_fields['or_amount']['name']}_off">{l s="Disabled" mod='hrxdelivery'}</label>
                         <a class="slide-button btn"></a>
                     </span>
                     <p class="help-block">
@@ -74,7 +75,7 @@
 
             <!-- price table -->
             <div class="form-group">
-                <label class="control-label {if $version17}col-lg-4{else}col-lg-3{/if}">{l s="Shipping price table"}</label>
+                <label class="control-label {if $version17}col-lg-4{else}col-lg-3{/if}">{l s="Shipping price table" mod='hrxdelivery'}</label>
                 <div class="col-lg-8">
                     <table class="table" id="shipping-price-table">
                         <thead>
@@ -115,3 +116,4 @@
         </div>
     </div>
 </form>
+*}

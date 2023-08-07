@@ -49,7 +49,7 @@ $(document).ready(function() {
         createOrder(id_order, 'order-page');
     });
 
-    $(document).on('click', '#table-hrx_order .create-order a', function(e) {
+    $(document).on('click', '.table.hrx_order .create-order a', function(e) {
         e.preventDefault();
         var id_order = $(this).attr('data-order');
         createOrder(id_order, 'table');
@@ -151,13 +151,19 @@ function printLabel(id_order, type)
                 showTableResponse(res.errors, 'danger');
             } else {
                 showTableResponse(res.success[0], 'success');
-                if(typeof res.data['url'] != undefined){
-                    // file is a File object, this will also take a blob
-                    const dataUrl = res.data['url'];
-                    // Open the window
-                    const pdfWindow = window.open(dataUrl);
-                    // Call print on it
-                    pdfWindow.print();
+                if(typeof res.data['pdfBase64'] != undefined){
+                    const pdfContent = `data:application/pdf;base64,${res.data['pdfBase64']}`;
+                    const filename = res.data['filename'];
+
+                    var encodedUri = encodeURI(pdfContent);
+                    var link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", filename.replace('.pdf', '') + ".pdf");
+                    document.body.appendChild(link); // Required for FF
+
+                    link.click(); // This will download the data file
+
+                    link.remove();
                 }
             }
         },
@@ -189,6 +195,15 @@ function saveHrxOrder()
                     row.find('.column-terminal').html(res.data['terminal']);
                 }
                 if(typeof res.data['warehouse'] != 'undefined'){
+                    row.find('.column-warehouse').html(res.data['warehouse']);
+                }
+                if(typeof res.data['dimmensions'] != 'undefined') {
+                    Object.keys(res.data.dimmensions).forEach((key) => {
+                        const dimmensionEl = document.querySelector(`#${key}`);
+                        if (dimmensionEl) {
+                            dimmensionEl.value = res.data.dimmensions[key];
+                        }
+                    });
                     row.find('.column-warehouse').html(res.data['warehouse']);
                 }
             }
@@ -450,10 +465,38 @@ function showTableResponse(msg, type, container = '')
     
 }
 
+function hrxUpdateAvailableCountries(type) {
+    $.ajax({
+        dataType: "json",
+        async: true,
+        url: hrxAjaxUrl + '&action=getAvailableCountries&type=' + type,
+        method: 'GET',
+        success: function(data) {
+            const list = document.querySelector(`[data-available-countries][data-type="${type}"]`);
+            if (!list) {
+                console.log(`Type ${type} element not found`);
+                return;
+            }
+
+            if (typeof data.error != 'undefined') {
+                alert(data.error);
+                return;
+            }
+
+            if (typeof(data.html) != 'undefined' && data.html) {
+                list.innerHTML = data.html;
+            }   
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            console.log(xhr);
+        },
+    });
+}
+
 //terminal updating
 $(document).ready(function(){
 
-    callNextStep = function(elt, url) {
+    callNextStep = function(elt, $wrapper, url) {
         $('.status').show();
         $.ajax({
             dataType: "json",
@@ -463,21 +506,23 @@ $(document).ready(function(){
             success: function(data) {
 
                 if (typeof data.error != 'undefined') {
-                    $('#hrx-terminal-progress').html(data.error);
-                    $('#hrx-terminal-loader').hide();
+                    $wrapper.find('[data-locations-progress]').html(data.error);
+                    $wrapper.find('[data-locations-loader]').hide();
                 }
                 else
                 {
                     if (typeof(data.url) != 'undefined' && data.url !== false && typeof(data.counter) != 'undefined') 
                     {
-                        $('#hrx-terminal-progress').html($(elt).data('starting') + ' ' + data.counter);
-                        callNextStep(elt, data.url);
+                        $wrapper.find('[data-locations-progress]').html($(elt).data('starting') + ' ' + data.counter);
+                        callNextStep(elt, $wrapper, data.url);
                     } 
                     else
                     {
-                        $('#hrx-terminal-progress').html($(elt).data('done') + ' ' + data.counter);
-                        $('#hrx-terminal-loader').hide();
+                        $wrapper.find('[data-locations-progress]').html($(elt).data('done') + ' ' + data.counter);
+                        $wrapper.find('[data-locations-loader]').hide();
                         elt.attr('disabled', false);
+
+                        hrxUpdateAvailableCountries(elt.data('type'));
                     }
                 }
                 
@@ -488,13 +533,45 @@ $(document).ready(function(){
         });
     }
 
-    $(document).on('click', '#configuration_form_update_terminals', function(e){
+    $(document).on('click', '#configuration_form_update_terminals', function(e) {
         e.preventDefault();
-        $('#hrx-terminal-loader').show();
-        $(this).attr('disabled', true);
-        $('#hrx-terminal-progress').html($(this).data('starting'));
+        
+        const list = document.querySelector(`[data-available-countries][data-type="terminal"]`);
+        if (list){
+            list.innerHTML = '';
+        }
 
-        callNextStep($(this), $(this).data('url'));
+        let $wrapper = $(this).closest('[data-locations-wrapper]');
+        $wrapper.find('[data-locations-loader]').show();
+        $(this).attr('disabled', true);
+        $wrapper.find('[data-locations-progress]').html($(this).data('starting'));
+
+        callNextStep($(this), $wrapper, $(this).data('url'));
     });
+
+    $(document).on('click', '#configuration_form_update_courier_locations', function(e) {
+        e.preventDefault();
+        
+        const list = document.querySelector(`[data-available-countries][data-type="courier"]`);
+        if (list){
+            list.innerHTML = '';
+        }
+
+        let $wrapper = $(this).closest('[data-locations-wrapper]');
+        $wrapper.find('[data-locations-loader]').show();
+        $(this).attr('disabled', true);
+        $wrapper.find('[data-locations-progress]').html($(this).data('starting'));
+
+        callNextStep($(this), $wrapper, $(this).data('url'));
+    });
+
+    if (typeof window.hrxAjaxUrl !== 'undefined') {
+        setTimeout(() => {
+            hrxUpdateAvailableCountries('terminal');
+        }, 1);
+        setTimeout(() => {
+            hrxUpdateAvailableCountries('courier');
+        }, 1);
+    }
 
 });

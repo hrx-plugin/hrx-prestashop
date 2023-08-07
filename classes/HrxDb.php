@@ -37,6 +37,13 @@ class HrxDB
             }
         }
 
+        try {
+            HrxDeliveryCourier::addSqlTable();
+            HrxDeliveryTerminal::addSqlTable();
+        } catch (\Throwable $th) {
+            return false;
+        }
+
         return true;
     }
 
@@ -51,6 +58,11 @@ class HrxDB
             } catch (Exception $e) {
             }
         }
+
+        try {
+            HrxDeliveryCourier::dropSqlTable();
+            HrxDeliveryTerminal::dropSqlTable();
+        } catch (\Throwable $th) {}
 
         return true;
     }

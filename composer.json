@@ -1,13 +1,22 @@
 {
-  "require": {
-       "hrx/api-lib": "dev-main",
-       "setasign/fpdi": "^2.3",
-       "setasign/fpdf": "^1.8"
-   },
-   "repositories": [
-       {
-           "type": "vcs",
-           "url": "https://github.com/mijora/hrx-api"
-       }
-   ]
+    "autoload": {
+        "psr-4": {
+            "Mijora\\Hrx\\DVDoug\\BoxPacker\\": "box_packer/"
+        }
+    },
+    "require": {
+        "hrx/api-lib": "dev-main",
+        "setasign/fpdi": "^2.3",
+        "setasign/fpdf": "^1.8"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/mijora/hrx-api"
+        }
+    ],
+    "config": {
+        "prepend-autoloader": false
+    },
+    "type": "prestashop-module"
 }

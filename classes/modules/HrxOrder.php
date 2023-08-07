@@ -30,6 +30,8 @@ class HrxOrder extends ObjectModel
 
     public $status_code;
 
+    public $kind;
+
     /** @var string Object creation date */
     public $date_add;
 

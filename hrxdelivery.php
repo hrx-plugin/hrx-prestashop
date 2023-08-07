@@ -23,22 +23,26 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 require_once dirname(__FILE__) . "/classes/HrxDb.php";
 require_once dirname(__FILE__) . "/classes/HrxAPIHelper.php";
 require_once dirname(__FILE__) . "/classes/HrxData.php";
 require_once dirname(__FILE__) . "/classes/modules/HrxOrder.php";
 require_once dirname(__FILE__) . "/classes/modules/HrxWarehouse.php";
 require_once dirname(__FILE__) . "/classes/modules/HrxCartTerminal.php";
-require_once dirname(__FILE__) . "/classes/modules/HrxShippingPrice.php";
+require_once dirname(__FILE__) . "/classes/modules/HrxDeliveryTerminal.php";
+require_once dirname(__FILE__) . "/classes/modules/HrxDeliveryCourier.php";
 
 require_once dirname(__FILE__) . "/vendor/autoload.php";
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
 class HrxDelivery extends CarrierModule
 {
+    const CONTROLLER_DELIVERY_COURIER = 'AdminHrxDeliveryCourier';
+    const CONTROLLER_DELIVERY_TERMINAL = 'AdminHrxDeliveryTerminal';
     const CONTROLLER_WAREHOUSE = 'AdminHrxWarehouse';
     const CONTROLLER_ORDER = 'AdminHrxOrder';
     const CONTROLLER_ADMIN_AJAX = 'AdminHrxDeliveryAjax';
@@ -166,7 +170,7 @@ class HrxDelivery extends CarrierModule
             'type' => 'pickup',
             'id_name' => 'HRX_PICKUP_ID',
             'reference_name' => 'HRX_PICKUP_ID_REFERENCE',
-            'title' => 'HRX parcel terminal',
+            'title' => 'Parcel terminal',
             'image' => 'logo.png',
             'kind' => 'delivery_location'
         ),
@@ -174,7 +178,7 @@ class HrxDelivery extends CarrierModule
             'type' => 'courier',
             'id_name' => 'HRX_COURIER_ID',
             'reference_name' => 'HRX_COURIER_ID_REFERENCE',
-            'title' => 'HRX courier',
+            'title' => 'Courier',
             'image' => 'logo.png',
             'kind' => 'courier'
         ),
@@ -186,11 +190,17 @@ class HrxDelivery extends CarrierModule
 
     public $terminal_count;
 
+    public $id_carrier;
+
+    public $carrier_instance = [];
+
+    public $loaded_terminals = [];
+
     public function __construct()
     {
         $this->name = 'hrxdelivery';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.0.1';
+        $this->version = '1.2.0';
         $this->author = 'mijora.lt';
         $this->need_instance = 1;
         $this->bootstrap = true;
@@ -311,9 +321,6 @@ class HrxDelivery extends CarrierModule
         if (Tools::isSubmit('submit' . $this->name . 'delivery')) {
             $output .= $this->saveConfig('DELIVERY', $this->l('Delivery settings updated'));
         }
-        if (Tools::isSubmit('submit' . $this->name . 'price')) {
-            $output .= $this->saveConfig('PRICE', $this->l('Shipping price settings updated'));
-        }
         if (Tools::isSubmit('submit' . $this->name . 'advanced')) {
             $output .= $this->saveConfig('ADVANCED', $this->l('Advanced settings updated'));
         }
@@ -321,7 +328,6 @@ class HrxDelivery extends CarrierModule
         return $output
             . $this->displayConfigApi()
             . $this->displayConfigDelivery()
-            . $this->displayConfigPrice()
             . $this->displayConfigAdvancedSettings()
             . $this->displayConfigTerminalSettings();
     }
@@ -451,54 +457,6 @@ class HrxDelivery extends CarrierModule
         return $this->context->smarty->fetch(self::$_moduleDir . 'views/templates/admin/delivery_settings.tpl');
     }
 
-    /**
-     * Display PRICE section in module configuration
-     */
-    public function displayConfigPrice()
-    {
-        $section_id = 'PRICE';
-
-        $config_fields = array(
-            'use_tax_table' => array(
-                'name' => self::$_configKeys[$section_id]['use_tax_table'],
-                'label' => $this->l('Use price table'),
-                'value' => Configuration::get(self::$_configKeys[$section_id]['use_tax_table']),
-                'description' => $this->l('If it is enabled, use this shipping price table, otherwise prestashop carrier settings will be used'),
-            ),
-            'tax' => array(
-                'name' => self::$_configKeys[$section_id]['tax'],
-                'label' => $this->l('Tax'),
-                'value' => Configuration::get(self::$_configKeys[$section_id]['tax']),
-                'description' => $this->l('Add specified tax to shipping price'),
-            ),
-            'or_amount' => array(
-                'name' => self::$_configKeys[$section_id]['or_amount'],
-                'label' => $this->l('Use amount tax'),
-                'value' => Configuration::get(self::$_configKeys[$section_id]['or_amount']),
-                'description' => $this->l('If it is enabled, the amount of tax is added to the shipping price, otherwise a percentage fee is added'),
-            ),
-        );
-
-        $shipping_price_table = HrxShippingPrice::getAllTable();
-
-        $button = array(
-            'text' => $this->l('Save price settings')
-        );
-
-        $this->context->smarty->assign([
-                'version17' => version_compare(_PS_VERSION_, '1.7', '>='),
-                'legend' => $this->l('Shipping price settings'),
-                'config_fields' => $config_fields,
-                'shipping_price_table' => $shipping_price_table,
-                'button' => $button,
-                'action' => AdminController::$currentIndex . '&configure=' . $this->name . '&save' . $this->name .
-                    '&token=' . Tools::getAdminTokenLite('AdminModules'),
-                'currency' => $this->context->currency->iso_code,
-            ]
-        );
-
-        return $this->context->smarty->fetch(self::$_moduleDir . 'views/templates/admin/price_settings.tpl');
-    }
 
     /**
      * Display Advanced settings section in module configuration
@@ -539,12 +497,17 @@ class HrxDelivery extends CarrierModule
 
     public function displayConfigTerminalSettings()
     {
-            $this->context->smarty->assign([
-                'version17' => version_compare(_PS_VERSION_, '1.7', '>='),
-                'legend' => $this->l('Terminal Settings'),
-                'hrx_update_terminals_url' => $this->context->link->getAdminLink(self::CONTROLLER_ADMIN_AJAX) . '&action=updateTerminals',
-                ]
-            );
+        Media::addJsDef([
+            'hrxAjaxUrl' => $this->context->link->getAdminLink(self::CONTROLLER_ADMIN_AJAX)
+        ]);
+
+        $this->context->smarty->assign([
+            'version17' => version_compare(_PS_VERSION_, '1.7', '>='),
+            'hrx_update_terminals_url' => $this->context->link->getAdminLink(self::CONTROLLER_ADMIN_AJAX) . '&action=updateTerminals',
+            'hrx_update_courier_url' => $this->context->link->getAdminLink(self::CONTROLLER_ADMIN_AJAX) . '&action=updateCourierLocations',
+            'hrx_courier_tab_url' => $this->context->link->getAdminLink(self::CONTROLLER_DELIVERY_COURIER),
+            'hrx_terminal_tab_url' => $this->context->link->getAdminLink(self::CONTROLLER_DELIVERY_TERMINAL),
+        ]);
 
         return $this->context->smarty->fetch(self::$_moduleDir . 'views/templates/admin/terminal_settings.tpl');
     }
@@ -601,42 +564,68 @@ class HrxDelivery extends CarrierModule
         return $helper->generateForm($fieldsForm);
     }
 
-    public function getOrderShippingCost($params, $shipping_cost)
+    public function getOrderShippingCost($cart, $shipping_cost)
     {
-        if($params instanceof Cart)
-        {
-            $cart = $params;
+        if(!($cart instanceof Cart)) {
+            return $shipping_cost;
+        }
 
-            if($this->checkCarrierDisablePassphrase($cart))
+        if($this->checkCarrierDisablePassphrase($cart)) {
+            return false;
+        }
+
+        $carrier = isset($this->carrier_instance[$this->id_carrier]) ? $this->carrier_instance[$this->id_carrier] :  null;
+        if (!$carrier) {
+            $carrier = new Carrier($this->id_carrier);
+        }
+
+        $type = $this->getCarrierType($carrier->id_reference);
+        
+
+        $address = new Address($cart->id_address_delivery);
+        $country_code = Country::getIsoById($address->id_country);
+
+        // check if courier is allowed to send to this country
+        if (self::CARRIER_TYPE_COURIER === $type) {
+            $delivery_courier = HrxDeliveryCourier::getDeliveryCourierByCountry($country_code);
+            if (!$delivery_courier || !((bool) $delivery_courier->active)) {
                 return false;
+            }
+        }
 
-            $address = new Address($cart->id_address_delivery);
-            $country_code = Country::getIsoById($address->id_country);
+        // check if country has terminals
+        if (self::CARRIER_TYPE_PICKUP === $type && !HrxDeliveryTerminal::isCountryAvailable($country_code)) {
+            return false;
+        }
 
-            //Check pickup carrier, if there are any terminals for cart
-            if(!isset($this->terminal_count))
-            {
-                $filtered_terminals = HrxData::getTerminalsByCountry($country_code);
-                $this->terminal_count = count($filtered_terminals);
+        // if terminals and country exists, check if it has at least one terminal to fit cart in
+        if (self::CARRIER_TYPE_PICKUP === $type) {
+            if (empty($this->loaded_terminals)) {
+                $this->loaded_terminals = HrxData::getTerminalsByCountry($country_code);
             }
 
-            if($this->terminal_count == 0)
-                return false; 
+            $item_list = HrxData::getItemListFromProductList($cart->getProducts(false, false));
 
-            if(Configuration::get(self::$_configKeys['PRICE']['use_tax_table']))
-            {
-                $weight = $cart->getTotalWeight();
+            $fits_terminal = false;
+            
+            $can_fit = [];
 
-                $price_by_weight = HrxShippingPrice::getPrice($weight, $country_code);
-                if($price_by_weight){
-                    $tax = Configuration::get(self::$_configKeys['PRICE']['tax']);
-                    if(Configuration::get(self::$_configKeys['PRICE']['or_amount'])){
-                        $price_by_weight += $tax;
-                    }else{
-                        $price_by_weight = ($price_by_weight * (1 + $tax / 100));
-                    }
-                    $shipping_cost = $price_by_weight;
+            foreach ($this->loaded_terminals as $terminal) {
+                $location_max_weight = HrxData::getMaxWeight($terminal);
+                $box_key = HrxData::getMaxDimensions($terminal, true) . ' ' . $location_max_weight; // to cache result for this kind of dimension box
+
+                if (!isset($can_fit[$box_key])) {
+                    $can_fit[$box_key] = HrxData::doesParcelFitBox($terminal, $item_list);
                 }
+
+                if ($can_fit[$box_key]) {
+                    $fits_terminal = true;
+                    break;
+                }
+            }
+
+            if (!$fits_terminal) {
+                return false;
             }
         }
 
@@ -781,7 +770,7 @@ class HrxDelivery extends CarrierModule
             $add_content = ($this->context->controller->php_self == 'order' && isset($this->context->controller->step) && $this->context->controller->step != 3) ||  $this->context->controller->php_self == 'order-opc';
         }
 
-        $carrier = new Carrier((int)Configuration::get(self::$_carriers['pickup']['reference_name']));
+        $carrier = Carrier::getCarrierByReference((int)Configuration::get(self::$_carriers['pickup']['reference_name']));
 
         Media::addJsDef([
             'hrxdelivery_front_controller_url' => $this->context->link->getModuleLink($this->name, 'front'),
@@ -807,7 +796,7 @@ class HrxDelivery extends CarrierModule
         if ($add_content)
         {
             Media::addJsDef(array(
-                    'images_url' => $this->_path . 'dist/images/',
+                    'hrx_images_url' => $this->_path . 'views/img/',
                 )
             );
             if(version_compare(_PS_VERSION_, '1.7', '>=')){               
@@ -816,9 +805,9 @@ class HrxDelivery extends CarrierModule
                 $this->context->controller->registerJavascript('hrxdelivery-js', 'modules/' . $this->name . '/views/js/front17.js');
             }
             else{
-                $this->context->controller->addJS('modules/' . $this->name . '/views/js/terminal-mapping.js');
-                $this->context->controller->addJS('modules/' . $this->name . '/views/js/front16.js');
-                $this->context->controller->addJS('modules/' . $this->name . '/views/js/map-init.js');
+                $this->context->controller->addJS($this->_path. '/views/js/terminal-mapping.js');
+                $this->context->controller->addJS($this->_path. '/views/js/front16.js');
+                $this->context->controller->addJS($this->_path. '/views/js/map-init.js');
             }
             
             $this->context->controller->addCSS($this->_path.'views/css/front.css');
@@ -836,6 +825,14 @@ class HrxDelivery extends CarrierModule
             ),
             self::CONTROLLER_WAREHOUSE => array(
                 'title' => $this->l('HRX Warehouses'),
+                'parent_tab' => (int) Tab::getIdFromClassName('AdminParentShipping')
+            ),
+            self::CONTROLLER_DELIVERY_COURIER => array(
+                'title' => $this->l('HRX Locations Courier'),
+                'parent_tab' => (int) Tab::getIdFromClassName('AdminParentShipping')
+            ),
+            self::CONTROLLER_DELIVERY_TERMINAL => array(
+                'title' => $this->l('HRX Locations Terminal'),
                 'parent_tab' => (int) Tab::getIdFromClassName('AdminParentShipping')
             ),
             self::CONTROLLER_ADMIN_AJAX => array(
@@ -1030,10 +1027,10 @@ class HrxDelivery extends CarrierModule
                 $address = new Address($order->id_address_delivery);
                 $country_code = Country::getIsoById($address->id_country);
 
-                $selected_terminal = HrxData::getDeliveryLocationInfo($hrxOrder->delivery_location_id, $country_code);
-
+                $selected_terminal = null;
                 $terminalsByDimensionsAndCity = [];
                 if($hrxOrder->kind == self::$_carriers[self::CARRIER_TYPE_PICKUP]['kind']){
+                    $selected_terminal = new HrxDeliveryTerminal($hrxOrder->delivery_location_id);
                     $terminalsByDimensionsAndCity = HrxData::getTerminalsByDimensionsAndCity($country_code, $hrxOrder, $selected_terminal);
                 }
 
@@ -1142,6 +1139,7 @@ class HrxDelivery extends CarrierModule
                 $hrxOrder->pickup_location_id = $default_warehouse;
             }
 
+            $delivery_point = [];
             if($carrier_type == self::CARRIER_TYPE_PICKUP)
             {
                 $hrxOrder->kind = self::$_carriers[self::CARRIER_TYPE_PICKUP]['kind'];
@@ -1150,15 +1148,28 @@ class HrxDelivery extends CarrierModule
             
                 if($terminal_id)
                 {
-                    $terminal_info = HrxData::getDeliveryLocationInfo($terminal_id, $country_code);
+                    $terminal_info = new HrxDeliveryTerminal($terminal_id);
                     $hrxOrder->delivery_location_id = $terminal_id;
-                    $hrxOrder->terminal = $terminal_info['address'] . ', ' . $terminal_info['city'] . ', ' . $terminal_info['country'];
+                    $hrxOrder->terminal = $terminal_info->address . ', ' . $terminal_info->city . ', ' . $terminal_info->country;
+                    $delivery_point = $terminal_info->getParams();
                 }
             }
             else
             {
                 $hrxOrder->kind = self::$_carriers[self::CARRIER_TYPE_COURIER]['kind'];
+                $courier_info = HrxDeliveryCourier::getDeliveryCourierByCountry($country_code);
+                $delivery_point = $courier_info->getParams();
             }
+
+            $item_list = HrxData::getItemListFromProductList($cart_products);
+            $packed_box = HrxData::getPackedBox($delivery_point, $item_list);
+
+            $min_dimmensions = HrxData::getMinDimensions($delivery_point);
+
+            $hrxOrder->weight = max($packed_box->getWeight() / 1000, HrxData::getMinWeight($delivery_point));
+            $hrxOrder->length = max($packed_box->getUsedLength() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_LENGTH]);
+            $hrxOrder->width = max($packed_box->getUsedWidth() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_WIDTH]);
+            $hrxOrder->height = max($packed_box->getUsedDepth() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_HEIGHT]);
 
             $hrxOrder->add();
         }
@@ -1169,27 +1180,26 @@ class HrxDelivery extends CarrierModule
      */
     public function hookDisplayCarrierExtraContent($params)
     {
-        $carrier_id_reference = $params['carrier']['id_reference'];
-        
-        $carrier_type = $this->getCarrierType($carrier_id_reference);
-
-        $address = new Address($params['cart']->id_address_delivery);
-        $country_code = Country::getIsoById($address->id_country);
-
-        if (empty($country_code)) {
-            return '';
-        }
-
-        if($carrier_type == 'courier')
-        {
+        $address = new Address($params['cart']->id_address_delivery ?? null);
+        if (!$address) {
             return;
         }
 
-        $terminals = HrxData::getTerminalsByCountry($country_code);
- 
-        if (!$terminals || empty($terminals)) {
-            return '';
+        $country_code = Country::getIsoById($address->id_country);
+
+        if (empty($country_code)) {
+            return;
         }
+
+        // 1.7 and up has carrier in $params and is called for each option, extra content is needed for terminals only
+        if (version_compare(_PS_VERSION_, '1.7', '>=')) {
+            $carrier_id_reference = isset($params['carrier']['id_reference']) ? $params['carrier']['id_reference'] : null;
+            $carrier_type = $this->getCarrierType($carrier_id_reference);
+            if($carrier_type == 'courier') {
+                return;
+            }
+        }
+
         $selected_terminal_id = HrxCartTerminal::getTerminalIdByCart($params['cart']->id);
 
         $this->context->smarty->assign(
@@ -1203,7 +1213,6 @@ class HrxDelivery extends CarrierModule
         );
         
         return $this->display(__FILE__, 'displayCarrierExtraContent.tpl');
-        
     }
 
     private function getCarrierType($carrier_id_reference)

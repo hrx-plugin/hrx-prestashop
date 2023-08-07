@@ -30,7 +30,9 @@ class HrxAPIHelper
     {
         try {
             $instance = self::getInstance();
+            $instance->setTimeout(30); // set longer timeout for sync
             $response = $instance->getPickupLocations($page);
+            $instance->setTimeout(15); // set default timeout
         }
         catch (Exception $e)
         {
@@ -159,7 +161,9 @@ class HrxAPIHelper
     {
         try {
             $instance = self::getInstance();
+            $instance->setTimeout(30); // set longer timeout for sync
             $response = $instance->getCourierDeliveryLocations();
+            $instance->setTimeout(15); // set default timeout
         }
         catch (Exception $e)
         {

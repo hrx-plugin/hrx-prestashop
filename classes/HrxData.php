@@ -26,8 +26,6 @@ class HrxData
     {
         if ($page == 1) {
             HrxDeliveryTerminal::disableAll();
-            Tools::deleteDirectory(HrxDelivery::$_moduleDir . self::$_terminalsList['directory']);
-            mkdir(HrxDelivery::$_moduleDir . self::$_terminalsList['directory'], 0777, true);
         }
         $locations_by_country = [];
         $result = HrxAPIHelper::getDeliveryLocations($page);

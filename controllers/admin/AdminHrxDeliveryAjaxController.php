@@ -52,9 +52,6 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
             case 'getAvailableCountries':
                 $this->getAvailableCountries();
                 break;
-            case 'updatePriceTable':
-                $this->updatePriceTable();
-                break;
         }
     }
 

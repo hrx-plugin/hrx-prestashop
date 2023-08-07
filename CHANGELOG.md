@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.1] - Optimum
+## [1.2.0] - Optimum
 ### Added
 - Courier delivery locations synchronization (module settings) and limitations
 - Terminal delivery locations synchronization (module settings) and limitations

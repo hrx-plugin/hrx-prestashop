@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - Fresh Install patch
+### Fixed
+- Fixed an issue when fresh install of module is done it fails to create database tables
+
 ## [1.2.0] - Optimum
 ### Added
 - Courier delivery locations synchronization (module settings) and limitations

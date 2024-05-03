@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Fixed locations list filter in admin HRX Locations page
+
 ## [1.2.1] - Fresh Install patch
 ### Fixed
 - Fixed an issue when fresh install of module is done it fails to create database tables

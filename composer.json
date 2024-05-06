@@ -5,7 +5,7 @@
         }
     },
     "require": {
-        "hrx/api-lib": "dev-main",
+        "hrx/api-lib": "^1.0",
         "setasign/fpdi": "^2.3",
         "setasign/fpdf": "^1.8"
     },

@@ -4,6 +4,12 @@
 ### Fixed
 - Fixed locations list filter in admin HRX Locations page
 
+### Improved
+- Increased number of getting terminal locations to 1000 per request
+
+### Updated
+- Updated HRX api-lib to 1.0.7
+
 ## [1.2.1] - Fresh Install patch
 ### Fixed
 - Fixed an issue when fresh install of module is done it fails to create database tables

@@ -4,27 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6225c7dc20339f312e75d71f0d40b26a",
+    "content-hash": "a21309a80325358dae2101c2b53eec30",
     "packages": [
         {
             "name": "hrx/api-lib",
-            "version": "dev-main",
+            "version": "1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hrx-plugin/hrx-api.git",
-                "reference": "91a66d098ce9ecc4c5e482d5ec7690e03968545d"
+                "reference": "382f98114446437ccf5bd1b34d809519f31bc336"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hrx-plugin/hrx-api/zipball/91a66d098ce9ecc4c5e482d5ec7690e03968545d",
-                "reference": "91a66d098ce9ecc4c5e482d5ec7690e03968545d",
+                "url": "https://api.github.com/repos/hrx-plugin/hrx-api/zipball/382f98114446437ccf5bd1b34d809519f31bc336",
+                "reference": "382f98114446437ccf5bd1b34d809519f31bc336",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -42,10 +41,10 @@
             ],
             "description": "Library for HRX Api",
             "support": {
-                "source": "https://github.com/hrx-plugin/hrx-api/tree/v1.0.3",
+                "source": "https://github.com/hrx-plugin/hrx-api/tree/v1.0.7",
                 "issues": "https://github.com/hrx-plugin/hrx-api/issues"
             },
-            "time": "2023-07-19T11:17:26+00:00"
+            "time": "2024-02-26T11:33:18+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -95,16 +94,16 @@
         },
         {
             "name": "setasign/fpdi",
-            "version": "v2.4.1",
+            "version": "v2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Setasign/FPDI.git",
-                "reference": "f4ba73e5bc053ccc90b81717c5df1cb2ea7bae7b"
+                "reference": "a6db878129ec6c7e141316ee71872923e7f1b7ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Setasign/FPDI/zipball/f4ba73e5bc053ccc90b81717c5df1cb2ea7bae7b",
-                "reference": "f4ba73e5bc053ccc90b81717c5df1cb2ea7bae7b",
+                "url": "https://api.github.com/repos/Setasign/FPDI/zipball/a6db878129ec6c7e141316ee71872923e7f1b7ad",
+                "reference": "a6db878129ec6c7e141316ee71872923e7f1b7ad",
                 "shasum": ""
             },
             "require": {
@@ -116,8 +115,8 @@
             },
             "require-dev": {
                 "phpunit/phpunit": "~5.7",
-                "setasign/fpdf": "~1.8",
-                "setasign/tfpdf": "~1.31",
+                "setasign/fpdf": "~1.8.6",
+                "setasign/tfpdf": "~1.33",
                 "squizlabs/php_codesniffer": "^3.5",
                 "tecnickcom/tcpdf": "~6.2"
             },
@@ -153,28 +152,22 @@
                 "fpdi",
                 "pdf"
             ],
-            "support": {
-                "issues": "https://github.com/Setasign/FPDI/issues",
-                "source": "https://github.com/Setasign/FPDI/tree/v2.4.1"
-            },
             "funding": [
                 {
                     "url": "https://tidelift.com/funding/github/packagist/setasign/fpdi",
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-07-27T08:12:09+00:00"
+            "time": "2023-12-11T16:03:32+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "hrx/api-lib": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "1.1.0"
 }

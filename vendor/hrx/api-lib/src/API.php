@@ -32,8 +32,8 @@ class API
         $this->setDebug($api_debug_mode);
         $this->setTestMode($test_mode);
 
-        $this->setTestUrl("https://woptest.hrx.eu/api/v1/");
-        $this->setLiveUrl("https://wop.hrx.eu/api/v1/");
+        $this->setTestUrl("https://woptest.hrx.eu");
+        $this->setLiveUrl("https://wop.hrx.eu");
     }
 
     /**
@@ -193,7 +193,7 @@ class API
      */
     public function getPickupLocations( $page = 1, $per_page = 100 )
     {
-        return $this->callApi($this->getUrl('pickup_locations'), array(), array(
+        return $this->callApi($this->getUrl('/api/v1/pickup_locations'), array(), array(
             'page' => $page,
             'per_page' => $per_page
         ));
@@ -209,9 +209,40 @@ class API
      */
     public function getDeliveryLocations( $page = 1, $per_page = 100 )
     {
-        return $this->callApi($this->getUrl('delivery_locations'), array(), array(
+        return $this->callApi($this->getUrl('/api/v1/delivery_locations'), array(), array(
             'page' => $page,
             'per_page' => $per_page
+        ));
+    }
+
+    /**
+     * Get countries of terminal delivery locations
+     * @since 1.0.6
+     * 
+     * @return (array) - List of countries to which terminal shipping is available
+     */
+    public function getDeliveryLocationsCountries()
+    {
+        return $this->callApi($this->getUrl('/api/v2/delivery_locations'));
+    }
+
+    /**
+     * Get delivery locations of the country terminals
+     * @since 1.0.6
+     * 
+     * @param (string) $country - Country code (e.g. DE)
+     * @param (integer) $page - Locations page number
+     * @param (string) $endpoint - If want to use the API request endpoint received with the list of countries
+     * @return (array) - One page of locations
+     */
+    public function getDeliveryLocationsForCountry( $country, $page = 1, $endpoint = '' )
+    {
+        if ( empty($endpoint) ) {
+            $endpoint = '/api/v2/delivery_locations/' . $country;
+        }
+
+        return $this->callApi($this->getUrl($endpoint), array(), array(
+            'page' => $page,
         ));
     }
 
@@ -223,7 +254,7 @@ class API
      */
     public function getCourierDeliveryLocations()
     {
-        return $this->callApi($this->getUrl('courier_delivery_locations'));
+        return $this->callApi($this->getUrl('/api/v1/courier_delivery_locations'));
     }
 
     /**
@@ -235,7 +266,7 @@ class API
      */
     public function generateOrder( $order_data )
     {
-        return $this->callApi($this->getUrl('orders'), $order_data);
+        return $this->callApi($this->getUrl('/api/v1/orders'), $order_data);
     }
 
     /**
@@ -248,7 +279,7 @@ class API
      */
     public function getOrders( $page = 1, $per_page = 100 )
     {
-        return $this->callApi($this->getUrl('orders'), array(), array(
+        return $this->callApi($this->getUrl('/api/v1/orders'), array(), array(
             'page' => $page,
             'per_page' => $per_page
         ));
@@ -263,7 +294,7 @@ class API
      */
     public function getOrder( $order_id )
     {
-        return $this->callApi($this->getUrl('orders/' . $order_id));
+        return $this->callApi($this->getUrl('/api/v1/orders/' . $order_id));
     }
 
     /**
@@ -276,7 +307,7 @@ class API
      */
     public function changeOrderReadyState( $order_id, $is_ready )
     {
-        return $this->callApi($this->getUrl('orders/' . $order_id . '/update_ready_state'), array('id' => $order_id, 'ready' => $is_ready));
+        return $this->callApi($this->getUrl('/api/v1/orders/' . $order_id . '/update_ready_state'), array('id' => $order_id, 'ready' => $is_ready));
     }
 
     /**
@@ -288,7 +319,7 @@ class API
      */
     public function cancelOrder( $order_id )
     {
-        return $this->callApi($this->getUrl('orders/' . $order_id .  '/cancel'), array('id' => $order_id));
+        return $this->callApi($this->getUrl('/api/v1/orders/' . $order_id .  '/cancel'), array('id' => $order_id));
     }
 
     /**
@@ -300,7 +331,7 @@ class API
      */
     public function getLabel( $order_id )
     {
-        return $this->callApi($this->getUrl('orders/' . $order_id . '/label'));
+        return $this->callApi($this->getUrl('/api/v1/orders/' . $order_id . '/label'));
     }
 
     /**
@@ -312,7 +343,7 @@ class API
      */
     public function getReturnLabel( $order_id )
     {
-        return $this->callApi($this->getUrl('orders/' . $order_id . '/return_label'));
+        return $this->callApi($this->getUrl('/api/v1/orders/' . $order_id . '/return_label'));
     }
 
     /**
@@ -324,7 +355,7 @@ class API
      */
     public function getTrackingEvents( $order_id )
     {
-        return $this->callApi($this->getUrl('orders/' . $order_id . '/tracking'));
+        return $this->callApi($this->getUrl('/api/v1/orders/' . $order_id . '/tracking'));
     }
 
     /**
@@ -336,7 +367,7 @@ class API
      */
     public function getTrackingInformation( $tracking_number )
     {
-        return $this->callApi($this->getUrl('public/orders/' . $tracking_number), array(), array(), false);
+        return $this->callApi($this->getUrl('/api/v1/public/orders/' . $tracking_number), array(), array(), false);
     }
 
     /**
@@ -349,7 +380,7 @@ class API
      * @param (boolean) $use_token - Execute as a public or as a private request
      * @return (mixed) - Received response to the request
      */
-    private function callApi( $url, $data = [], $url_params = [], $use_token = true )
+    private function callApi( $url, $data = [], $url_params = [], $use_token = true, $retry = 0 )
     {
         $ch = curl_init();
 
@@ -358,11 +389,9 @@ class API
             $headers[] = "Authorization: Bearer " . $this->token;
         }
 
-        if ( ! empty($url_params) ) {
-            $url .= '?' . http_build_query($url_params);
-        }
+        $url_query = (empty($url_params)) ? '' : '?' . http_build_query($url_params);
 
-        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_URL, $url . $url_query);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
@@ -374,7 +403,8 @@ class API
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $errorMsg = (curl_errno($ch)) ? curl_error($ch) : '';
+        $errorNo = curl_errno($ch);
+        $errorMsg = ($errorNo) ? curl_error($ch) : '';
 
         curl_close($ch);
 
@@ -389,6 +419,10 @@ class API
             'Response data' => json_encode(json_decode($response), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
             'Response error' => $errorMsg,
         ));
+
+        if ( $retry < 5 && ($errorNo == 56 || ($httpCode != 200 && $httpCode != 201)) ) {
+            return $this->callApi($url, $data, $url_params, $use_token, $retry + 1);
+        }
 
         return $this->handleApiResponse($response, $httpCode, $errorMsg);
     }

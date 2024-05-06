@@ -511,7 +511,7 @@ $(document).ready(function(){
                 }
                 else
                 {
-                    if (typeof(data.url) != 'undefined' && data.url !== false && typeof(data.counter) != 'undefined') 
+                    if (typeof(data.url) != 'undefined' && data.url !== false && typeof(data.counter) != 'undefined' && data.counter > 0) 
                     {
                         $wrapper.find('[data-locations-progress]').html($(elt).data('starting') + ' ' + data.counter);
                         callNextStep(elt, $wrapper, data.url);

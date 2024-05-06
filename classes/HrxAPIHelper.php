@@ -45,7 +45,7 @@ class HrxAPIHelper
     {
         try {
             $instance = self::getInstance();
-            $response = $instance->getDeliveryLocations($page);
+            $response = $instance->getDeliveryLocations($page, 1000);
         }
         catch (Exception $e)
         {

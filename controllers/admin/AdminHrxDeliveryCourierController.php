@@ -49,10 +49,11 @@ class AdminHrxDeliveryCourierController extends ModuleAdminController
             ),
             'country_active' => array(
                 'type' => 'bool',
-                'active' => 'active',
+                'active' => 'country_active',
                 'title' => $this->module->l('Active'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
+                'filter_key' => 'a!active',
             ), 
         );
     }

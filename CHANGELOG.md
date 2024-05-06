@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.2.2] - Locations getting fix
 ### Fixed
 - Fixed locations list filter in admin HRX Locations page
 

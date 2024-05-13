@@ -428,6 +428,9 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 $this->changeOrderStatus($id_order, Configuration::get(HrxDelivery::$_order_states['new']['key']));
 
                 $hrxOrder->update();
+                
+                $order->setWsShippingNumber($res['tracking_number'] ?? '');
+                $order->update();
 
                 $actions = $this->module->getActionButtons($hrxOrder->id, $is_table);
 

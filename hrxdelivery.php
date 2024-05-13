@@ -1016,6 +1016,8 @@ class HrxDelivery extends CarrierModule
                         $hrxOrder->tracking_number = $result['tracking_number'];
                         $hrxOrder->tracking_url = $result['tracking_url'];
                         $hrxOrder->update();
+                        $order->setWsShippingNumber($result['tracking_number']);
+                        $order->update();
                     }
                 }
 

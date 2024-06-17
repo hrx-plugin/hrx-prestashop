@@ -200,7 +200,7 @@ class HrxDelivery extends CarrierModule
     {
         $this->name = 'hrxdelivery';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.2.2';
+        $this->version = '1.2.3';
         $this->author = 'mijora.lt';
         $this->need_instance = 1;
         $this->bootstrap = true;
@@ -1016,6 +1016,8 @@ class HrxDelivery extends CarrierModule
                         $hrxOrder->tracking_number = $result['tracking_number'];
                         $hrxOrder->tracking_url = $result['tracking_url'];
                         $hrxOrder->update();
+                        $order->setWsShippingNumber($result['tracking_number']);
+                        $order->update();
                     }
                 }
 

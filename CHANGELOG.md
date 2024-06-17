@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - Fix track number
+### Fixed
+- Fixed that the received tracking number of the shipment would be added to the Prestashop Order
+
 ## [1.2.2] - Locations getting fix
 ### Fixed
 - Fixed locations list filter in admin HRX Locations page

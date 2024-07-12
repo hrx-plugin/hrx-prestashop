@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Fixed
 - Fixed English translations of order statuses created by the module
+- Fixed HRX block in Order view on Prestashop 1.7.0-1.7.6
 
 ## [1.2.3] - Fix track number
 ### Fixed

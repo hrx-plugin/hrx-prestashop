@@ -1091,8 +1091,10 @@ class HrxDelivery extends CarrierModule
                     'select_warehouse' => $this->l('Please select a warehouse'),
                 ]);
                 
-                if(version_compare(_PS_VERSION_, '1.7', '>'))
-                    return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name .'/views/templates/admin/displayAdminOrder.tpl');
+                if(version_compare(_PS_VERSION_, '1.7.7', '>='))
+                    return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name .'/views/templates/admin/displayAdminOrder177.tpl');
+                else if(version_compare(_PS_VERSION_, '1.7', '>='))
+                    return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name .'/views/templates/admin/displayAdminOrder17.tpl');
                 else
                     return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name .'/views/templates/admin/displayAdminOrder16.tpl');
             }

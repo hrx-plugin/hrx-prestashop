@@ -14,16 +14,16 @@
 <script type="text/javascript">
     var id_order = '{$id_order}';
 </script>
-<div id="hrx-delivery" class="row ps16 hrx">
-    <div class="col-lg-6 d-print-none">
-        <div class="panel">
+<div id="hrx-delivery" class="row bootstrap ps177 hrx">
+    <div class="col-lg-6 d-print-none table">
+        <div class="card">
             <form method="post" id="hrx_order_form">
                 <input type="hidden" id="kind" name="kind" value="{$kind}">
-                <div class="panel-heading">
+                <div class="card-header">
                     <div class="row">
                         <div class="col-lg-6 card-header-title">
                             <img src="{$image}"/>
-                            <h4>{l s="Hrx delivery" mod='hrxdelivery'}</h4>
+                            <h3>{l s="Hrx delivery" mod='hrxdelivery'}</h3>
                         </div>
                         
                         <div class="col-lg-6 tracking-number">
@@ -35,12 +35,12 @@
                 </div>
                 
                 <div class="card-body">
-                    <div class="response alert mb-3"></div>
+                    <div class="response mb-3"></div>
                     <div class="form-wrapper">
 
                         {* terminal settings *}
-                        
-                        <div class="form-group delivery-settings {if !isset($selected_terminal)} hidden {/if}">
+                        {if $kind == 'delivery_location'}
+                        <div class="form-group delivery-settings">
                             <label class="control-label col-lg-4 col-2 dimension-group">{l s="Parcel terminal" mod='hrxdelivery'}</label>
                             <div class="col-lg-7 dimensions-wrapper" id="terminals">
                                 {if isset($terminals) && !empty($terminals)}
@@ -62,7 +62,7 @@
                                 {/if}
                             </div>
                         </div>
-
+                        {/if}
                         {* terminal settings *}
                         
                         <div class="form-group delivery-settings">

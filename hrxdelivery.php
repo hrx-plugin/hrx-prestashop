@@ -74,7 +74,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#FAE9EA',
             'text-color' => '#E00000',
             'lang' => array(
-                'en' => 'Cancelled',
+                'en' => 'HRX shipment canceled',
                 'lt' => 'HRX siunta atšaukta',
             ),
         ),
@@ -83,7 +83,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#E7F4EA',
             'text-color' => '#44A04C',
             'lang' => array(
-                'en' => 'Delivered',
+                'en' => 'HRX shipment delivered',
                 'lt' => 'HRX siunta pristatyta',
             ),
         ),
@@ -92,7 +92,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#FAE9EA',
             'text-color' => '#E00000',
             'lang' => array(
-                'en' => 'Error',
+                'en' => 'HRX shipment have error',
                 'lt' => 'Klaida HRX siuntoje',
             ),
         ),
@@ -101,7 +101,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#FAF1DF',
             'text-color' => '#F3AC20',
             'lang' => array(
-                'en' => 'In delivery',
+                'en' => 'HRX shipment in delivery',
                 'lt' => 'HRX siunta pristatoma',
             ),
         ),
@@ -110,7 +110,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#FAF1DF',
             'text-color' => '#F3AC20',
             'lang' => array(
-                'en' => 'In return',
+                'en' => 'HRX shipment returning',
                 'lt' => 'HRX siunta grąžinama',
             ),
         ),
@@ -119,7 +119,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#E6F6FA',
             'text-color' => '#25B9D7',
             'lang' => array(
-                'en' => 'New',
+                'en' => 'New HRX shipment',
                 'lt' => 'Nauja HRX siunta',
             ),
         ),
@@ -128,7 +128,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#E7F4EA',
             'text-color' => '#44A04C',
             'lang' => array(
-                'en' => 'Ready',
+                'en' => 'HRX shipment is ready',
                 'lt' => 'HRX siunta paruošta',
             ),
         ),
@@ -137,7 +137,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#E7F4EA',
             'text-color' => '#44A04C',
             'lang' => array(
-                'en' => 'Returned',
+                'en' => 'HRX shipment returned',
                 'lt' => 'HRX siunta grąžinta',
             ),
         ),

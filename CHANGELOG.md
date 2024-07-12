@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Fixed English translations of order statuses created by the module
+
 ## [1.2.3] - Fix track number
 ### Fixed
 - Fixed that the received tracking number of the shipment would be added to the Prestashop Order

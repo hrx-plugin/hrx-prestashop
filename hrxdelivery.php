@@ -1358,4 +1358,18 @@ class HrxDelivery extends CarrierModule
 
         return $this->context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/action_button.tpl');
     }
+
+    public static function changeOrderStatus($id_order, $status)
+    {
+        $order = new Order((int)$id_order);
+        if ($order->current_state != $status)
+        {
+            $history = new OrderHistory();
+            $history->id_order = (int)$id_order;
+            $history->id_employee = Context::getContext()->employee->id;
+            $history->changeIdOrderState((int)$status, $order);
+            $order->update();
+            $history->add();
+        }
+    }
 }

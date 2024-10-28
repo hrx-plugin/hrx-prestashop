@@ -1349,15 +1349,11 @@ class HrxDelivery extends CarrierModule
         $require_return_label = Configuration::get(HrxDelivery::$_configKeys['ADVANCED']['return_label']);
 
         $this->context->smarty->assign([
-            'id_order' => $id_order,
-            'icon' => 'icon-edit',
-            'title' => $this->l('Edit'),
-            'class' => 'change-order-modal',
-            'href' => '#',
-            'status' => $status,
-            'require_return_label' => $require_return_label,
-            'is_table' => $is_table,
-            'or_pickup' => $or_pickup,
+            'hrxbtn_id_order' => $id_order,
+            'hrxbtn_status' => $status,
+            'hrxbtn_require_return_label' => $require_return_label,
+            'hrxbtn_is_table' => $is_table,
+            'hrxbtn_or_pickup' => $or_pickup,
         ]);
 
         return $this->context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/action_button.tpl');

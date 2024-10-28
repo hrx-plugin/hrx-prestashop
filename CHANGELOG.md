@@ -4,6 +4,7 @@
 ### Fixed
 - Fixed English translations of order statuses created by the module
 - Fixed HRX block in Order view on Prestashop 1.7.0-1.7.6
+- Fixed page title in Prestashop Order page
 - Fixed Order status change to "New HRX shipment"
 
 ### Improved

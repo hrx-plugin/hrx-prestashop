@@ -205,27 +205,15 @@ class AdminHrxOrderController extends ModuleAdminController
                     $result['errors'][] = $response['error'];
                 }      
                 else{
-                    $hrxOrder->status = Configuration::get(HrxDelivery::$_order_states['ready']['key']);
+                    $new_status_id = Configuration::get(HrxDelivery::$_order_states['ready']['key']);
+                    
+                    $hrxOrder->status = $new_status_id;
                     $hrxOrder->status_code = 'ready';
                     $hrxOrder->update();
     
-                    $this->changeOrderStatus($id, Configuration::get(HrxDelivery::$_order_states['ready']['key']));
+                    HrxDelivery::changeOrderStatus($id, $new_status_id);
                 }
             }
-        }
-    }
-
-    private function changeOrderStatus($id_order, $status)
-    {
-        $order = new Order((int)$id_order);
-        if ($order->current_state != $status)
-        {
-            $history = new OrderHistory();
-            $history->id_order = (int)$id_order;
-            $history->id_employee = Context::getContext()->employee->id;
-            $history->changeIdOrderState((int)$status, $order);
-            $order->update();
-            $history->add();
         }
     }
 }

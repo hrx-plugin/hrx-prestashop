@@ -70,11 +70,13 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 $result['errors'][] = $response['error'];
             }      
             else{
-                $hrxOrder->status = Configuration::get(HrxDelivery::$_order_states['ready']['key']);
+                $new_status_id = Configuration::get(HrxDelivery::$_order_states['ready']['key']);
+
+                $hrxOrder->status = $new_status_id;
                 $hrxOrder->status_code = 'ready';
                 $hrxOrder->update();
 
-                $this->changeOrderStatus($id_order, Configuration::get(HrxDelivery::$_order_states['ready']['key']));
+                HrxDelivery::changeOrderStatus($id_order, $new_status_id);
 
                 $actions = $this->module->getActionButtons($hrxOrder->id, $is_table);
 
@@ -419,18 +421,20 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
 
             if(isset($response['success'])){
                 $res = $response['success'];
+
+                $order->setWsShippingNumber($res['tracking_number'] ?? '');
+                $order->update();
+
+                $new_status_id = Configuration::get(HrxDelivery::$_order_states['new']['key']);
+
                 $hrxOrder->id_hrx = $res['id'] ?? '';
                 $hrxOrder->tracking_number = $res['tracking_number'] ?? '';
                 $hrxOrder->tracking_url = $res['tracking_url'] ?? '';
-                $hrxOrder->status = Configuration::get(HrxDelivery::$_order_states['new']['key']);
+                $hrxOrder->status = $new_status_id;
                 $hrxOrder->status_code = 'new';
-
-                $this->changeOrderStatus($id_order, Configuration::get(HrxDelivery::$_order_states['new']['key']));
-
                 $hrxOrder->update();
-                
-                $order->setWsShippingNumber($res['tracking_number'] ?? '');
-                $order->update();
+
+                HrxDelivery::changeOrderStatus($id_order, $new_status_id);
 
                 $actions = $this->module->getActionButtons($hrxOrder->id, $is_table);
 
@@ -443,20 +447,6 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
             }
         }
         die(json_encode($result));
-    }
-
-    private function changeOrderStatus($id_order, $status)
-    {
-        $order = new Order((int)$id_order);
-        if ($order->current_state != $status)
-        {
-            $history = new OrderHistory();
-            $history->id_order = (int)$id_order;
-            $history->id_employee = Context::getContext()->employee->id;
-            $history->changeIdOrderState((int)$status, $order);
-            $order->update();
-            $history->add();
-        }
     }
 
     private function cancelOrder()
@@ -472,11 +462,13 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 $result['errors'][] = $response['error'];
             }      
             else{
-                $hrxOrder->status = Configuration::get(HrxDelivery::$_order_states['cancelled']['key']);
+                $new_status_id = Configuration::get(HrxDelivery::$_order_states['cancelled']['key']);
+
+                $hrxOrder->status = $new_status_id;
                 $hrxOrder->status_code = 'cancelled';
                 $hrxOrder->update();
 
-                $this->changeOrderStatus($id_order, Configuration::get(HrxDelivery::$_order_states['cancelled']['key']));
+                HrxDelivery::changeOrderStatus($id_order, $new_status_id);
 
                 $result['success'][] = $this->module->l('Order canceled successfully.');
                 $result['data']['status'] = $this->getStatusHtml(HrxDelivery::$_order_states['cancelled']);

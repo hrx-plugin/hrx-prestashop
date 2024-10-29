@@ -155,8 +155,9 @@ class HrxDelivery extends CarrierModule
             'weight' => 'HRX_DEFAULT_WEIGHT',
         ],
         'ADVANCED' => [
-            'return_label'  => 'HRX_REQUIRE_RETURN_LABEL',
-            'passphrase'    => 'HRX_CARRIER_DISABLE_PASSPHRASE',
+            'return_label'      => 'HRX_REQUIRE_RETURN_LABEL',
+            'passphrase'        => 'HRX_CARRIER_DISABLE_PASSPHRASE',
+            'terminals_radius'  => 'HRX_TERMINALS_RADIUS',
         ],
         'PRICE' => [
             'use_tax_table' => 'HRX_TAX_TABLE_ENABLED',
@@ -489,6 +490,14 @@ class HrxDelivery extends CarrierModule
                 'label' => $this->l('Carrier disable passphrase'),
                 'name' => self::$_configKeys[$section_id]['passphrase'],
                 'desc' => $this->l('Carriers will not be used for the cart, if cart contains any product, whose description contains this passphrase.'),
+            ),
+            array(
+                'type' => 'text',
+                'label' => $this->l('The radius of displayed terminals'),
+                'suffix' => 'km',
+                'name' => self::$_configKeys[$section_id]['terminals_radius'],
+                'desc' => $this->l('The maximum distance of the displayed terminal in kilometers from the entered address in the Checkout page. Terminals further than the specified distance will not be displayed. This parameter is intended to reduce the browser load in cases where the country has a lot of terminals (eg Poland).') . '<br/><b>' . $this->l('Leave empty to show all terminals.') . '</b>',
+                'class' => 'small',
             ),
         );
 

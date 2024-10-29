@@ -14,16 +14,15 @@
 <script type="text/javascript">
     var id_order = '{$id_order}';
 </script>
-<div id="hrx-delivery" class="row hrx bootstrap">
-    <div class="col-lg-6 d-print-none table">
-        <div class="card">
+<div id="hrx-delivery" class="tab-content ps17 hrx">
+        <div class="panel">
             <form method="post" id="hrx_order_form">
                 <input type="hidden" id="kind" name="kind" value="{$kind}">
-                <div class="card-header">
+                <div class="panel-heading">
                     <div class="row">
                         <div class="col-lg-6 card-header-title">
                             <img src="{$image}"/>
-                            <h3>{l s="Hrx delivery" mod='hrxdelivery'}</h3>
+                            {l s="Hrx delivery" mod='hrxdelivery'}
                         </div>
                         
                         <div class="col-lg-6 tracking-number">
@@ -41,8 +40,8 @@
                         {* terminal settings *}
                         {if $kind == 'delivery_location'}
                         <div class="form-group delivery-settings">
-                            <label class="control-label col-lg-4 col-2 dimension-group">{l s="Parcel terminal" mod='hrxdelivery'}</label>
-                            <div class="col-lg-7 dimensions-wrapper" id="terminals">
+                            <label class="control-label col-lg-3 col-2 dimension-group">{l s="Parcel terminal" mod='hrxdelivery'}</label>
+                            <div class="col-lg-9 dimensions-wrapper" id="terminals">
                                 {if isset($terminals) && !empty($terminals)}
                                 <select name="delivery_location_id" id="delivery_location_id" class="custom-select">
                                     {foreach from=$terminals item=field}
@@ -66,8 +65,8 @@
                         {* terminal settings *}
                         
                         <div class="form-group delivery-settings">
-                            <label class="control-label col-lg-4 col-2 dimension-group">{l s="Warehouse" mod='hrxdelivery'}</label>
-                            <div class="col-lg-7 dimensions-wrapper">
+                            <label class="control-label col-lg-3 col-2 dimension-group">{l s="Warehouse" mod='hrxdelivery'}</label>
+                            <div class="col-lg-9 dimensions-wrapper">
                                 {if isset($warehouses) && !empty($warehouses)}
                                     <select name="pickup_location_id" id="pickup_location_id" class="custom-select">
                                         <option value="0" selected="true" disabled="disabled">{$select_warehouse}</option>
@@ -89,8 +88,8 @@
 
                         {* dimension settings *}
                         <div class="form-group delivery-settings">
-                            <label class="control-label col-lg-4 col-2 dimension-group">{l s="Parcel size" mod='hrxdelivery'}</label>
-                            <div class="col-lg-7 dimensions-wrapper">
+                            <label class="control-label col-lg-3 col-2 dimension-group">{l s="Parcel size" mod='hrxdelivery'}</label>
+                            <div class="col-lg-9 dimensions-wrapper">
                                 {foreach from=$dimensions_fields item=field}
                                     <div class="form-group{if isset($field.class)} {$field.class}{/if}">
                                         <label class="control-label">{$field.label}</label>
@@ -108,9 +107,9 @@
 
                         {* weight settings *}
                         <div class="form-group delivery-settings">
-                            <label class="control-label col-lg-4 col-2 dimension-group">{l s="Parcel weight" mod='hrxdelivery'}</label>
+                            <label class="control-label col-lg-3 col-2 dimension-group">{l s="Parcel weight" mod='hrxdelivery'}</label>
                             
-                            <div class="col-lg-7 dimensions-wrapper">
+                            <div class="col-lg-9 dimensions-wrapper">
                                 
                                 <div class="form-group{if isset($weight.class)} {$weight.class}{/if}">
                                     <label class="control-label">{$weight.label}</label>
@@ -133,5 +132,4 @@
                 </div>
             </form>
         </div>
-    </div>
 </div>

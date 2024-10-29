@@ -68,6 +68,17 @@ class HrxDeliveryFrontModuleFrontController extends ModuleFrontController
 
         $terminal_list = HrxData::getTerminalsByCountry($country_code);
 
+        $address_txt = $address->address1 . ', ' . $address->city . ' ' . $address->postcode;
+        $address_coordinates = HrxData::getCoordinatesByAddress($address_txt, $country_code);
+        $radius = (int) Configuration::get(HrxDelivery::$_configKeys['ADVANCED']['terminals_radius']); //km
+        
+        if ($radius) {
+            $terminal_list = array_filter($terminal_list, function($terminal) use ($radius, $address_coordinates) {
+                $distance = HrxData::calculateDistanceBetweenPoints($address_coordinates['latitude'], $address_coordinates['longitude'], $terminal['latitude'], $terminal['longitude']);
+                return ($distance <= $radius);
+            });
+        }
+
         $can_fit = [];
 
         $terminal_list = array_filter($terminal_list, function($terminal) use ($item_list, &$can_fit) {
@@ -81,6 +92,6 @@ class HrxDeliveryFrontModuleFrontController extends ModuleFrontController
             return $can_fit[$box_key];
         });
 
-        return $terminal_list;
+        return array_values($terminal_list);
     }
 }

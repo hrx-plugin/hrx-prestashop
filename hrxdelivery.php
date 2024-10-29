@@ -74,7 +74,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#FAE9EA',
             'text-color' => '#E00000',
             'lang' => array(
-                'en' => 'Cancelled',
+                'en' => 'HRX shipment canceled',
                 'lt' => 'HRX siunta atšaukta',
             ),
         ),
@@ -83,7 +83,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#E7F4EA',
             'text-color' => '#44A04C',
             'lang' => array(
-                'en' => 'Delivered',
+                'en' => 'HRX shipment delivered',
                 'lt' => 'HRX siunta pristatyta',
             ),
         ),
@@ -92,7 +92,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#FAE9EA',
             'text-color' => '#E00000',
             'lang' => array(
-                'en' => 'Error',
+                'en' => 'HRX shipment have error',
                 'lt' => 'Klaida HRX siuntoje',
             ),
         ),
@@ -101,7 +101,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#FAF1DF',
             'text-color' => '#F3AC20',
             'lang' => array(
-                'en' => 'In delivery',
+                'en' => 'HRX shipment in delivery',
                 'lt' => 'HRX siunta pristatoma',
             ),
         ),
@@ -110,7 +110,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#FAF1DF',
             'text-color' => '#F3AC20',
             'lang' => array(
-                'en' => 'In return',
+                'en' => 'HRX shipment returning',
                 'lt' => 'HRX siunta grąžinama',
             ),
         ),
@@ -119,7 +119,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#E6F6FA',
             'text-color' => '#25B9D7',
             'lang' => array(
-                'en' => 'New',
+                'en' => 'New HRX shipment',
                 'lt' => 'Nauja HRX siunta',
             ),
         ),
@@ -128,7 +128,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#E7F4EA',
             'text-color' => '#44A04C',
             'lang' => array(
-                'en' => 'Ready',
+                'en' => 'HRX shipment is ready',
                 'lt' => 'HRX siunta paruošta',
             ),
         ),
@@ -137,7 +137,7 @@ class HrxDelivery extends CarrierModule
             'color' => '#E7F4EA',
             'text-color' => '#44A04C',
             'lang' => array(
-                'en' => 'Returned',
+                'en' => 'HRX shipment returned',
                 'lt' => 'HRX siunta grąžinta',
             ),
         ),
@@ -155,8 +155,9 @@ class HrxDelivery extends CarrierModule
             'weight' => 'HRX_DEFAULT_WEIGHT',
         ],
         'ADVANCED' => [
-            'return_label'  => 'HRX_REQUIRE_RETURN_LABEL',
-            'passphrase'    => 'HRX_CARRIER_DISABLE_PASSPHRASE',
+            'return_label'      => 'HRX_REQUIRE_RETURN_LABEL',
+            'passphrase'        => 'HRX_CARRIER_DISABLE_PASSPHRASE',
+            'terminals_radius'  => 'HRX_TERMINALS_RADIUS',
         ],
         'PRICE' => [
             'use_tax_table' => 'HRX_TAX_TABLE_ENABLED',
@@ -200,7 +201,7 @@ class HrxDelivery extends CarrierModule
     {
         $this->name = 'hrxdelivery';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.2.3';
+        $this->version = '1.2.4';
         $this->author = 'mijora.lt';
         $this->need_instance = 1;
         $this->bootstrap = true;
@@ -489,6 +490,14 @@ class HrxDelivery extends CarrierModule
                 'label' => $this->l('Carrier disable passphrase'),
                 'name' => self::$_configKeys[$section_id]['passphrase'],
                 'desc' => $this->l('Carriers will not be used for the cart, if cart contains any product, whose description contains this passphrase.'),
+            ),
+            array(
+                'type' => 'text',
+                'label' => $this->l('The radius of displayed terminals'),
+                'suffix' => 'km',
+                'name' => self::$_configKeys[$section_id]['terminals_radius'],
+                'desc' => $this->l('The maximum distance of the displayed terminal in kilometers from the entered address in the Checkout page. Terminals further than the specified distance will not be displayed. This parameter is intended to reduce the browser load in cases where the country has a lot of terminals (eg Poland).') . '<br/><b>' . $this->l('Leave empty to show all terminals.') . '</b>',
+                'class' => 'small',
             ),
         );
 
@@ -1091,8 +1100,10 @@ class HrxDelivery extends CarrierModule
                     'select_warehouse' => $this->l('Please select a warehouse'),
                 ]);
                 
-                if(version_compare(_PS_VERSION_, '1.7', '>'))
-                    return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name .'/views/templates/admin/displayAdminOrder.tpl');
+                if(version_compare(_PS_VERSION_, '1.7.7', '>='))
+                    return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name .'/views/templates/admin/displayAdminOrder177.tpl');
+                else if(version_compare(_PS_VERSION_, '1.7', '>='))
+                    return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name .'/views/templates/admin/displayAdminOrder17.tpl');
                 else
                     return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name .'/views/templates/admin/displayAdminOrder16.tpl');
             }
@@ -1347,17 +1358,27 @@ class HrxDelivery extends CarrierModule
         $require_return_label = Configuration::get(HrxDelivery::$_configKeys['ADVANCED']['return_label']);
 
         $this->context->smarty->assign([
-            'id_order' => $id_order,
-            'icon' => 'icon-edit',
-            'title' => $this->l('Edit'),
-            'class' => 'change-order-modal',
-            'href' => '#',
-            'status' => $status,
-            'require_return_label' => $require_return_label,
-            'is_table' => $is_table,
-            'or_pickup' => $or_pickup,
+            'hrxbtn_id_order' => $id_order,
+            'hrxbtn_status' => $status,
+            'hrxbtn_require_return_label' => $require_return_label,
+            'hrxbtn_is_table' => $is_table,
+            'hrxbtn_or_pickup' => $or_pickup,
         ]);
 
         return $this->context->smarty->fetch(HrxDelivery::$_moduleDir . 'views/templates/admin/action_button.tpl');
+    }
+
+    public static function changeOrderStatus($id_order, $status)
+    {
+        $order = new Order((int)$id_order);
+        if ($order->current_state != $status)
+        {
+            $history = new OrderHistory();
+            $history->id_order = (int)$id_order;
+            $history->id_employee = Context::getContext()->employee->id;
+            $history->changeIdOrderState((int)$status, $order);
+            $order->update();
+            $history->add();
+        }
     }
 }

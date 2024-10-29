@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.4] - Fixed noticed problems
+### Fixed
+- Fixed English translations of order statuses created by the module
+- Fixed HRX block in Order view on Prestashop 1.7.0-1.7.6
+- Fixed page title in Prestashop Order page
+- Fixed Order status change to "New HRX shipment"
+- Fixed getting terminals on Checkout page when their number is very large
+
+### Improved
+- Reduced the number of requests to the database when changing the order status
+- A parameter has been created in the module settings that allows to limit the terminals displayed on the Checkout page based on the distance from the entered delivery address
+
 ## [1.2.3] - Fix track number
 ### Fixed
 - Fixed that the received tracking number of the shipment would be added to the Prestashop Order

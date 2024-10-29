@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.2.4] - Fixed noticed problems
 ### Fixed
 - Fixed English translations of order statuses created by the module
 - Fixed HRX block in Order view on Prestashop 1.7.0-1.7.6

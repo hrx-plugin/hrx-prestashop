@@ -132,32 +132,49 @@ class HrxDeliveryTerminal extends ObjectModel
         ');
     }
 
+    /**
+     * Retrieves a paginated list of locations by country.
+     *
+     * This function fetches locations in chunks (pagination) to reduce memory usage.
+     * Each chunk is retrieved using an SQL query with a limit and offset.
+     *
+     * @param string $country The country code to filter locations by (e.g., "LT").
+     * @return Generator Returns a generator yielding each location as an associative array.
+     */
     public static function getLocationListByCountry($country)
     {
-        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . self::$definition['table'] . '` WHERE country = "' . pSQL(strtoupper($country)) . '" AND active = 1';
+        $db = Db::getInstance();
+        $country = pSQL(strtoupper($country));
 
-        $result = Db::getInstance()->executeS($sql);
+        $offset = 0;
+        $limit = 1000;
 
-        if (!$result) {
-            return [];
-        }
+        while (true) {
+            $sql = 'SELECT * FROM `' . _DB_PREFIX_ . self::$definition['table'] . '` WHERE country = "' . $country . '" AND active = 1 LIMIT ' . $offset . ', ' . $limit;
+            $result = $db->executeS($sql);
 
-        return array_map(function ($row) {
-            $params = [];
-            if ($row['params']) {
-                $params = json_decode((string) $row['params'], true);
+            if (!$result) {
+                break; // Exit loop if there are no more records
             }
 
-            unset($row['params']);
-
-            if (!is_array($params)) {
+            foreach ($result as $row) {
                 $params = [];
+                if (!empty($row['params'])) {
+                    $params = json_decode((string) $row['params'], true);
+                }
+                unset($row['params']);
+
+                $row['id'] = $row['id_terminal'];
+
+                if (!is_array($params)) {
+                    $params = [];
+                }
+
+                yield array_merge($row, $params); // Yield one record at a time
             }
 
-            $row['id'] = $row['id_terminal'];
-
-            return array_merge($row, $params);
-        }, $result);
+            $offset += $limit; // Increase offset to fetch the next chunk
+        }
     }
 
     public static function getStringAsMySqlValues($data)

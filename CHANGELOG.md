@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Fixed map markers show for all countries
+
 ## [1.2.4] - Fixed noticed problems
 ### Fixed
 - Fixed English translations of order statuses created by the module

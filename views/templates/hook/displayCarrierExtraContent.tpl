@@ -20,6 +20,7 @@
         var hrx_country_code = "{$country_code}";
         var hrx_postal_code = "{$postcode}";
         var hrx_city = "{$city}";
+        var hrx_available_countries = {$available_countries|@json_encode nofilter};
         
         document.addEventListener("DOMContentLoaded", function(event) {
             hrx_custom_modal();

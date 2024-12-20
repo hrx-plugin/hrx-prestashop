@@ -819,8 +819,9 @@ class HrxDelivery extends CarrierModule
                 $this->context->controller->addJS($this->_path. '/views/js/map-init.js');
             }
             
-            $this->context->controller->addCSS($this->_path.'views/css/front.css');
             $this->context->controller->addCSS($this->_path . 'views/css/terminal-mapping.css');
+            $this->context->controller->addCSS($this->_path . 'views/css/leaflet.css');
+            $this->context->controller->addCSS($this->_path . 'views/css/front.css');
         }
         
     }
@@ -1214,6 +1215,7 @@ class HrxDelivery extends CarrierModule
         }
 
         $selected_terminal_id = HrxCartTerminal::getTerminalIdByCart($params['cart']->id);
+        $available_countries = HrxDeliveryTerminal::getAvailableCountries();
 
         $this->context->smarty->assign(
             array(
@@ -1222,6 +1224,7 @@ class HrxDelivery extends CarrierModule
                 'country_code' => $country_code,
                 'selected_terminal' => $selected_terminal_id,
                 'images_url' => $this->_path . 'views/img/',
+                'available_countries' => $available_countries
             )
         );
         

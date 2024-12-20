@@ -36,21 +36,6 @@ var hrx_custom_modal = function()
 
         hrx_terminals = getTerminals();
 
-        hrx_tmjs.init({
-            country_code: hrx_country_code,
-            identifier: 'hrx',
-            isModal: true,
-            hideContainer: false,
-            hideSelectBtn: false,
-            postal_code: hrx_postal_code,
-            city: hrx_city,
-            terminalList: hrx_terminals,
-        });
-
-        hrx_tmjs.setParseMapTooltip((location, leafletCoords) => {
-            return location.address + ', ' + location.city;
-        });
-
         hrx_tmjs.sub('tmjs-ready', function(data)
         {
             let selected_terminal = document.getElementById("hrx-selected-terminal").value;
@@ -62,13 +47,15 @@ var hrx_custom_modal = function()
                 document.querySelector('#hrx-pickup-select-modal .tmjs-selected-terminal').innerHTML = '<i class="hrx-selected-terminal"></i><span class="hrx-tmjs-terminal-address">' + selected_location.address + '</span> <span class="hrx-tmjs-terminal-comment">' + selected_location.city + '.</span>';
             }
 
-            hrx_tmjs.map.createIcon('default', 'https://mijora.ams3.digitaloceanspaces.com/hrx/hrx/default.png');
-            hrx_tmjs.map.createIcon('hrx_ee', 'https://mijora.ams3.digitaloceanspaces.com/hrx/hrx/EE.png');
-            hrx_tmjs.map.createIcon('hrx_fi', 'https://mijora.ams3.digitaloceanspaces.com/hrx/hrx/FI.png');
-            hrx_tmjs.map.createIcon('hrx_lt', 'https://mijora.ams3.digitaloceanspaces.com/hrx/hrx/LT.png');
-            hrx_tmjs.map.createIcon('hrx_lv', 'https://mijora.ams3.digitaloceanspaces.com/hrx/hrx/LV.png');
-            hrx_tmjs.map.createIcon('hrx_pl', 'https://mijora.ams3.digitaloceanspaces.com/hrx/hrx/PL.png');
-            hrx_tmjs.map.createIcon('hrx_se', 'https://mijora.ams3.digitaloceanspaces.com/hrx/hrx/SE.png');
+            let markers_url = 'https://mijora.ams3.digitaloceanspaces.com/hrx/hrx/';
+
+            hrx_tmjs.map.createIcon('default', markers_url + 'default.png');
+            for ( let i = 0; i < hrx_available_countries.length; i++ ) {
+                hrx_tmjs.map.createIcon(
+                    'hrx_' + hrx_available_countries[i].iso_code.toLowerCase(),
+                    markers_url + hrx_available_countries[i].iso_code + '.png'
+                );
+            }
 
             // need to refresh icons
             hrx_tmjs.map.refreshMarkerIcons();
@@ -90,7 +77,20 @@ var hrx_custom_modal = function()
 
         });
 
-
+        hrx_tmjs.init({
+            country_code: hrx_country_code,
+            identifier: 'hrx',
+            isModal: true,
+            hideContainer: false,
+            hideSelectBtn: false,
+            postal_code: hrx_postal_code,
+            city: hrx_city,
+            terminalList: hrx_terminals,
+            parseMapTooltip: (location, leafletCoords) => {
+                return location.address + ', ' + location.city;
+            },
+            //customTileServerUrl: 'https://185.140.230.40:8080/tile/{z}/{x}/{y}.png' //TODO: Need map URL. This not working
+        });
     }
     // hrx_tmjs.removeOverlay();
     window['hrx_custom_modal'].hrx_tmjs = hrx_tmjs;

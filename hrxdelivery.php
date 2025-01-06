@@ -157,6 +157,7 @@ class HrxDelivery extends CarrierModule
         'ADVANCED' => [
             'return_label'      => 'HRX_REQUIRE_RETURN_LABEL',
             'passphrase'        => 'HRX_CARRIER_DISABLE_PASSPHRASE',
+            'default_country'   => 'HRX_CARRIER_DEFAULT_COUNTRY',
             'terminals_radius'  => 'HRX_TERMINALS_RADIUS',
         ],
         'PRICE' => [
@@ -201,7 +202,7 @@ class HrxDelivery extends CarrierModule
     {
         $this->name = 'hrxdelivery';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.2.4';
+        $this->version = '1.2.5';
         $this->author = 'mijora.lt';
         $this->need_instance = 1;
         $this->bootstrap = true;
@@ -466,6 +467,20 @@ class HrxDelivery extends CarrierModule
     {
         $section_id = 'ADVANCED';
 
+        $eu_countries_list = HrxData::getEuCountriesList(Context::getContext()->language->id);
+        $eu_countries_options = array(
+            array(
+                'id_option' => '',
+                'name' => '- ' . $this->l('Not specified') . ' -'
+            )
+        );
+        foreach ( $eu_countries_list as $country_code => $country_name ) {
+            $eu_countries_options[] = array(
+                'id_option' => $country_code,
+                'name' => $country_name
+            );
+        }
+
         $form_fields = array(
             array(
                 'type' => 'switch',
@@ -484,6 +499,17 @@ class HrxDelivery extends CarrierModule
                         'label' => $this->l('Disabled')
                     )
                 ),
+            ),
+            array(
+                'type' => 'select',
+                'label' => $this->l('Default country of delivery'),
+                'name' => self::$_configKeys[$section_id]['default_country'],
+                'options' => array(
+                    'query' => $eu_countries_options,
+                    'id' => 'id_option',
+                    'name' => 'name'
+                ),
+                'desc' => $this->l('Specify a default delivery country if want to display HRX shipping method price before a shipping address is entered (e.g. in Cart page)')
             ),
             array(
                 'type' => 'text',
@@ -593,6 +619,10 @@ class HrxDelivery extends CarrierModule
 
         $address = new Address($cart->id_address_delivery);
         $country_code = Country::getIsoById($address->id_country);
+        $default_country_code = Configuration::get(self::$_configKeys['ADVANCED']['default_country']);
+        if (empty($country_code) && !empty($default_country_code)) {
+            $country_code = $default_country_code;
+        }
 
         // check if courier is allowed to send to this country
         if (self::CARRIER_TYPE_COURIER === $type) {
@@ -819,8 +849,9 @@ class HrxDelivery extends CarrierModule
                 $this->context->controller->addJS($this->_path. '/views/js/map-init.js');
             }
             
-            $this->context->controller->addCSS($this->_path.'views/css/front.css');
             $this->context->controller->addCSS($this->_path . 'views/css/terminal-mapping.css');
+            $this->context->controller->addCSS($this->_path . 'views/css/leaflet.css');
+            $this->context->controller->addCSS($this->_path . 'views/css/front.css');
         }
         
     }
@@ -1214,6 +1245,7 @@ class HrxDelivery extends CarrierModule
         }
 
         $selected_terminal_id = HrxCartTerminal::getTerminalIdByCart($params['cart']->id);
+        $available_countries = HrxDeliveryTerminal::getAvailableCountries();
 
         $this->context->smarty->assign(
             array(
@@ -1222,6 +1254,7 @@ class HrxDelivery extends CarrierModule
                 'country_code' => $country_code,
                 'selected_terminal' => $selected_terminal_id,
                 'images_url' => $this->_path . 'views/img/',
+                'available_countries' => $available_countries
             )
         );
         

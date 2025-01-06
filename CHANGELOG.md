@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.5] - Frontend improvements
+### Fixed
+- Fixed map markers show for all countries
+
+### Improved
+- Added the option to specify a default delivery country to display the delivery method price in the cart
+
 ## [1.2.4] - Fixed noticed problems
 ### Fixed
 - Fixed English translations of order statuses created by the module

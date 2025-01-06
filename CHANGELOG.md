@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.2.5] - Frontend improvements
 ### Fixed
 - Fixed map markers show for all countries
 

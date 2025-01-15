@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.6] - Improve parcel size calc
+### Fixed
+- fixed so that when calculating the shipment size, the location's maximum shipment size parameters would be taken into account
+
+### Improved
+- added that on the Order edit page, in the block next to "Parcel size", the possible values will be displayed based on the selected location
+- added additional library "mijora/min-box-calculator" (v0.1.1) for calculating the shipment size
+
 ## [1.2.5] - Frontend improvements
 ### Fixed
 - Fixed map markers show for all countries

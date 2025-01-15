@@ -202,7 +202,7 @@ class HrxDelivery extends CarrierModule
     {
         $this->name = 'hrxdelivery';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.2.5';
+        $this->version = '1.2.6';
         $this->author = 'mijora.lt';
         $this->need_instance = 1;
         $this->bootstrap = true;
@@ -1074,31 +1074,48 @@ class HrxDelivery extends CarrierModule
                 if($hrxOrder->kind == self::$_carriers[self::CARRIER_TYPE_PICKUP]['kind']){
                     $selected_terminal = new HrxDeliveryTerminal($hrxOrder->delivery_location_id);
                     $terminalsByDimensionsAndCity = HrxData::getTerminalsByDimensionsAndCity($country_code, $hrxOrder, $selected_terminal);
+                    $location_params = $selected_terminal->getParams();
+                } else {
+                    $selected_courier = HrxDeliveryCourier::getDeliveryCourierByCountry($country_code);
+                    $location_params = $selected_courier->getParams();
                 }
 
                 $warehouses = HrxWarehouse::getWarehouses();
 
                 $section_id = 'DELIVERY';
-                $dimensions_fields = array(
+                $dimensions_fields_data = array(
                     array(
-                        'name' => self::$_configKeys[$section_id]['w'],
-                        'label' => $this->l('Width'),
-                        'value' => $hrxOrder->width,
-                        'unit' => 'cm'
+                        'name' => 'width',
+                        'title' => $this->l('Width'),
+                        'sort' => 'w',
+                        'value' => $hrxOrder->width
                     ),
                     array(
-                        'name' => self::$_configKeys[$section_id]['h'],
-                        'label' => $this->l('Height'),
-                        'value' => $hrxOrder->height,
-                        'unit' => 'cm'
+                        'name' => 'height',
+                        'title' => $this->l('Height'),
+                        'sort' => 'h',
+                        'value' => $hrxOrder->height
                     ),
                     array(
-                        'name' => self::$_configKeys[$section_id]['l'],
-                        'label' => $this->l('Length'),
-                        'value' => $hrxOrder->length,
-                        'unit' => 'cm'
+                        'name' => 'length',
+                        'title' => $this->l('Length'),
+                        'sort' => 'l',
+                        'value' => $hrxOrder->length
                     ),
                 );
+                $dimensions_fields = array();
+                foreach ( $dimensions_fields_data as $dim_field_data ) {
+                    $desc = (isset($location_params['min_' . $dim_field_data['name'] . '_cm'])) ? floatval($location_params['min_' . $dim_field_data['name'] . '_cm']) : 0;
+                    $desc .= ' - ';
+                    $desc .= (isset($location_params['max_' . $dim_field_data['name'] . '_cm'])) ? floatval($location_params['max_' . $dim_field_data['name'] . '_cm']) : '...';
+                    $dimensions_fields[] = array(
+                        'name' => self::$_configKeys[$section_id][$dim_field_data['sort']],
+                        'label' => $dim_field_data['title'],
+                        'value' => $dim_field_data['value'],
+                        'unit' => 'cm',
+                        'description' => $desc
+                    );
+                }
 
                 $weight = array(
                     'name' => self::$_configKeys[$section_id]['weight'],
@@ -1207,13 +1224,26 @@ class HrxDelivery extends CarrierModule
 
             $item_list = HrxData::getItemListFromProductList($cart_products);
             $packed_box = HrxData::getPackedBox($delivery_point, $item_list);
-
             $min_dimmensions = HrxData::getMinDimensions($delivery_point);
 
+            if ( isset($delivery_point['max_width_cm']) && isset($delivery_point['max_height_cm']) && isset($delivery_point['max_length_cm']) ) {
+                $max_size = array(
+                    'width' => $delivery_point['max_width_cm'],
+                    'height' => $delivery_point['max_height_cm'],
+                    'length' => $delivery_point['max_length_cm'],
+                );
+                $package_dimensions = $this->getPackageDimensions($cart_products, $max_size);
+
+                $hrxOrder->length = max($package_dimensions['l'], $min_dimmensions['l']);
+                $hrxOrder->width = max($package_dimensions['w'], $min_dimmensions['w']);
+                $hrxOrder->height = max($package_dimensions['h'], $min_dimmensions['h']);
+            } else {
+                $hrxOrder->length = max($packed_box->getUsedLength() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_LENGTH]);
+                $hrxOrder->width = max($packed_box->getUsedWidth() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_WIDTH]);
+                $hrxOrder->height = max($packed_box->getUsedDepth() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_HEIGHT]);
+            }
+
             $hrxOrder->weight = max($packed_box->getWeight() / 1000, HrxData::getMinWeight($delivery_point));
-            $hrxOrder->length = max($packed_box->getUsedLength() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_LENGTH]);
-            $hrxOrder->width = max($packed_box->getUsedWidth() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_WIDTH]);
-            $hrxOrder->height = max($packed_box->getUsedDepth() / 10, $min_dimmensions[\Mijora\Hrx\DVDoug\BoxPacker\ParcelBox::DIMENSION_HEIGHT]);
 
             $hrxOrder->add();
         }
@@ -1279,70 +1309,49 @@ class HrxDelivery extends CarrierModule
         }
     }
 
-    private function getPackageDimensions($products)
+    private function getPackageDimensions($products, $max_size = false)
     {
-        $dimensions = [
-            'l' => [],
-            'w' => [],
-            'h' => []
-        ];
+        $box_size = array('w' => 0, 'h' => 0, 'l' => 0);
 
-        foreach ($products as $product)
-        {
-            $amount = (int) $product['cart_quantity'];
-
-            for($i = 0; $i < $amount; $i++)
-            {                    
-                $dimensions['l'][] = $product['depth'] ? $product['depth'] : 1;
-                $dimensions['w'][] = $product['width'] ? $product['width'] : 1;
-                $dimensions['h'][] = $product['height'] ? $product['height'] : 1;
+        try {
+            $items_list = array();
+            foreach ( $products as $product ) {
+                $amount = (int) $product['cart_quantity'];
+                for ( $i = 0; $i < $amount; $i++ ) {
+                    $prod_w = $product['width'] ? floatval($product['width']) : 1;
+                    $prod_h = $product['height'] ? floatval($product['height']) : 1;
+                    $prod_l = $product['depth'] ? floatval($product['depth']) : 1;
+                    $items_list[] = new \Mijora\MinBoxCalculator\Elements\Item($prod_w, $prod_h, $prod_l);
+                }
             }
-        }
 
-        $sum = [];
-        $max = [];
-
-        foreach($dimensions as $key => $dimension)
-        {
-            $sum[$key] = array_sum($dimension);
-            $max[$key] = max($dimension);
-        }
-
-        $volumes = [];
-         
-        $volumes['by_x']['v'] = $sum['l'] * $max['w'] * $max['h'];
-        $volumes['by_x']['d'] = ['w' => $max['w'], 'h' => $max['h'], 'l' => $sum['l']];
-
-        $volumes['by_y']['v'] = $sum['h'] * $max['w'] * $max['l'];
-        $volumes['by_y']['d'] = ['w' => $max['w'], 'h' => $sum['h'], 'l' =>$max['l']];
-
-        $volumes['by_z']['v'] = $sum['w'] * $max['l'] * $max['h'];
-        $volumes['by_z']['d'] = ['w' => $sum['w'], 'h' => $max['h'], 'l' => $max['l']];
-
-        $smallest_volume_key = 'by_x';
-
-        foreach($volumes as $key => $volume)
-        {
-            if($volume['v'] < $volumes[$smallest_volume_key]['v'])
-            {
-                $smallest_volume_key = $key;
+            $box_calculator = new \Mijora\MinBoxCalculator\CalculateBox($items_list);
+            if ( ! $max_size ) {
+                $result = $box_calculator->findMinBoxSize();
+            } else {
+                $result = $box_calculator
+                    ->setMaxBoxSize(floatval($max_size['width']), floatval($max_size['height']), floatval($max_size['length']))
+                    ->findBoxSizeByMaxSize();
             }
-        }
 
-        if($volumes[$smallest_volume_key]['v'] == 0)
-        {
+            if ( ! $result ) {
+                return $this->getDefaultPackageDimensions();
+            }
+            $box_size['w'] = $result->getWidth();
+            $box_size['h'] = $result->getHeight();
+            $box_size['l'] = $result->getLength();
+        } catch( \Exception $e ) {
             return $this->getDefaultPackageDimensions();
         }
-        
-        if(Configuration::get('PS_DIMENSION_UNIT') == 'm')
-        {
-            foreach($volumes[$smallest_volume_key]['d'] as &$value)
+
+        if ( Configuration::get('PS_DIMENSION_UNIT') == 'm' ) {
+            foreach($box_size as &$value)
             {
-                $value = (int)$value * 100;
+                $value = (int) $value * 100;
             }
         }
 
-        return $volumes[$smallest_volume_key]['d'];
+        return $box_size;
     }
 
     private function getDefaultPackageDimensions()

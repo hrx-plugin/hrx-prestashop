@@ -6,6 +6,7 @@
 
 ### Improved
 - added that on the Order edit page, in the block next to "Parcel size", the possible values will be displayed based on the selected location
+- added additional library "mijora/min-box-calculator" (v0.1.1) for calculating the shipment size
 
 ## [1.2.5] - Frontend improvements
 ### Fixed

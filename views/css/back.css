@@ -28,6 +28,7 @@
 .form-group.delivery-settings{
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 .dimensions-wrapper{
     display: flex;
@@ -102,7 +103,7 @@
     color: #FFFFFF;
 }
 #hrx-delivery .dimension input{
-    width: 134px;
+    width: 110px;
     padding: 8px 39px 8px 10px;
 }
 #hrx-delivery .dimension-group{
@@ -116,6 +117,9 @@
     width: 100%;
 }
 #hrx-delivery .dimensions-wrapper .form-group{
+    margin: 0;
+}
+#hrx-delivery .dimensions-wrapper .help-block{
     margin: 0;
 }
 #hrx-delivery .response ol{

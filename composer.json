@@ -1,7 +1,8 @@
 {
     "autoload": {
         "psr-4": {
-            "Mijora\\Hrx\\DVDoug\\BoxPacker\\": "box_packer/"
+            "Mijora\\Hrx\\DVDoug\\BoxPacker\\": "box_packer/",
+            "Mijora\\MinBoxCalculator\\": "vendor/mijora/min-box-calculator/src/"
         }
     },
     "require": {

@@ -13,6 +13,7 @@ class ComposerStaticInit0dd5e1ea4fe13d38aa18b7bc95cd180e
         ),
         'M' => 
         array (
+            'Mijora\\MinBoxCalculator\\' => 24,
             'Mijora\\Hrx\\DVDoug\\BoxPacker\\' => 28,
         ),
         'H' => 
@@ -26,6 +27,10 @@ class ComposerStaticInit0dd5e1ea4fe13d38aa18b7bc95cd180e
         array (
             0 => __DIR__ . '/..' . '/setasign/fpdi/src',
         ),
+        'Mijora\\MinBoxCalculator\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mijora/min-box-calculator/src',
+        ),
         'Mijora\\Hrx\\DVDoug\\BoxPacker\\' => 
         array (
             0 => __DIR__ . '/../..' . '/box_packer',
@@ -37,6 +42,7 @@ class ComposerStaticInit0dd5e1ea4fe13d38aa18b7bc95cd180e
     );
 
     public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'FPDF' => __DIR__ . '/..' . '/setasign/fpdf/fpdf.php',
     );
 

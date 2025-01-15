@@ -99,7 +99,7 @@
                                             <i class="unit">{$field.unit}</i>
                                         </div>
                                         {if isset($field.description)}
-                                            <p class="help-block">{$field.description}</p>
+                                            <p class="help-block text-left text-muted"><small>{$field.description}</small></p>
                                         {/if}
                                     </div>
                                 {/foreach}

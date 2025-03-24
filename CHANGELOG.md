@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Improved
+- added use of address 2 field
+
 ## [1.2.6] - Improve parcel size calc
 ### Fixed
 - fixed so that when calculating the shipment size, the location's maximum shipment size parameters would be taken into account

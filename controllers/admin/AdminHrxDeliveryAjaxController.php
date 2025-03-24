@@ -401,6 +401,9 @@ class AdminHrxDeliveryAjaxController extends ModuleAdminController
                 'country' => $country_code,
                 'address' => $address->address1,
             ];
+            if ( ! empty($address->address2) ) {
+                $customerData['address'] .= ' - ' . $address->address2;
+            }
 
             $shipmentData = [
                 'reference' => 'PACK-' . $order->reference,

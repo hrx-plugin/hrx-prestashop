@@ -160,8 +160,11 @@ class AdminHrxOrderController extends ModuleAdminController
                     $hrxOrder->tracking_number = $result['tracking_number'];
                     $hrxOrder->tracking_url = $result['tracking_url'];
                     $hrxOrder->update();
-                    $order->setWsShippingNumber($result['tracking_number']);
-                    $order->update();
+                    $psOrder = new Order((int)$order['id']);
+                    if (Validate::isLoadedObject($psOrder)) {
+                        $psOrder->setWsShippingNumber($result['tracking_number']);
+                        $psOrder->update();
+                    }
                 }
             }
         }

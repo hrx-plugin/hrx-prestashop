@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0] - Prestashop 8 support
+### Improved
+- added use of address 2 field
+- added PrestaShop 8 support
+- improved admin order page detection for PS 1.7.7+ Symfony-based pages
+- added separate "HRX Delivery" menu section and HRX pages have been moved to it
+
 ## [1.2.6] - Improve parcel size calc
 ### Fixed
 - fixed so that when calculating the shipment size, the location's maximum shipment size parameters would be taken into account

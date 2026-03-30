@@ -46,6 +46,7 @@ class HrxDelivery extends CarrierModule
     const CONTROLLER_WAREHOUSE = 'AdminHrxWarehouse';
     const CONTROLLER_ORDER = 'AdminHrxOrder';
     const CONTROLLER_ADMIN_AJAX = 'AdminHrxDeliveryAjax';
+    const CONTROLLER_PARENT_TAB = 'AdminHrxDelivery';
 
     const CARRIER_TYPE_PICKUP = "pickup";
     const CARRIER_TYPE_COURIER = "courier";
@@ -58,14 +59,9 @@ class HrxDelivery extends CarrierModule
         'displayCarrierExtraContent',
         'updateCarrier',
         'displayAdminOrder',
-        'actionValidateStepComplete',
         'actionValidateOrder',
         'actionAdminControllerSetMedia',
-        'displayAdminListBefore',
-        'actionCarrierProcess',
         'displayBeforeCarrier',
-        'actionObjectCountryUpdateAfter',
-        'backOfficeHeader',
     );
 
     public static $_order_states = array(
@@ -202,7 +198,7 @@ class HrxDelivery extends CarrierModule
     {
         $this->name = 'hrxdelivery';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.2.6';
+        $this->version = '1.3.0';
         $this->author = 'mijora.lt';
         $this->need_instance = 1;
         $this->bootstrap = true;
@@ -214,7 +210,7 @@ class HrxDelivery extends CarrierModule
 
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall this module?');
 
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => '8.99.99');
     }
 
     public function install()
@@ -774,11 +770,47 @@ class HrxDelivery extends CarrierModule
     }
 
     /**
+     * Update carrier ID when PrestaShop updates a carrier (creates new version)
+     */
+    public function hookUpdateCarrier($params)
+    {
+        $id_carrier_old = (int) $params['id_carrier'];
+        $id_carrier_new = (int) $params['carrier']->id;
+
+        foreach (self::$_carriers as $carrier) {
+            if ($id_carrier_old == (int) Configuration::get($carrier['id_name'])) {
+                Configuration::updateValue($carrier['id_name'], $id_carrier_new);
+            }
+        }
+    }
+
+    /**
     * Add the CSS & JavaScript files you want to be loaded in the BO.
     */
     public function hookActionAdminControllerSetMedia()
     {
-        if (Tools::getValue('configure') == $this->name || Tools::getValue('controller') == 'AdminOrders' || Tools::getValue('controller') == 'AdminHrxOrder') 
+        // Load menu icon CSS on all BO pages (PS 1.7+)
+        if (version_compare(_PS_VERSION_, '1.7', '>=')) {
+            $this->context->controller->addCSS($this->_path . 'views/css/admin-menu.css');
+        }
+
+        $isTargetPage = false;
+
+        // Check via GET parameter (works in PS 1.6, 1.7 legacy routing)
+        $controller = Tools::getValue('controller');
+        if ($controller == 'AdminOrders' || $controller == 'AdminHrxOrder' || Tools::getValue('configure') == $this->name) {
+            $isTargetPage = true;
+        }
+
+        // PS 1.7.7+ / PS 8: Check via context controller class (Symfony order page may not have controller in GET)
+        if (!$isTargetPage && isset($this->context->controller)) {
+            $controllerClass = get_class($this->context->controller);
+            if (in_array($controllerClass, ['AdminOrdersController', 'AdminHrxOrderController'])) {
+                $isTargetPage = true;
+            }
+        }
+
+        if ($isTargetPage)
         {
             Media::addJsDef([
                 'hrxdelivery_create_order_url' => $this->context->link->getAdminLink(self::CONTROLLER_ADMIN_AJAX) . '&action=createOrder',
@@ -856,24 +888,41 @@ class HrxDelivery extends CarrierModule
         
     }
 
-    private function getModuleTabs()
+    private function getSellSectionId()
+    {
+        $ordersTabId = (int) Tab::getIdFromClassName('AdminParentOrders');
+        $ordersTab = new Tab($ordersTabId);
+        return (int) $ordersTab->id_parent;
+    }
+
+    private function getParentTab()
     {
         return array(
+            'title' => $this->l('HRX Delivery'),
+            'parent_tab' => $this->getSellSectionId(),
+        );
+    }
+
+    private function getModuleTabs()
+    {
+        $parentTabId = (int) Tab::getIdFromClassName(self::CONTROLLER_PARENT_TAB);
+
+        return array(
             self::CONTROLLER_ORDER => array(
-                'title' => $this->l('HRX Orders'),
-                'parent_tab' => (int) Tab::getIdFromClassName('AdminParentShipping')
+                'title' => $this->l('Orders'),
+                'parent_tab' => $parentTabId
             ),
             self::CONTROLLER_WAREHOUSE => array(
-                'title' => $this->l('HRX Warehouses'),
-                'parent_tab' => (int) Tab::getIdFromClassName('AdminParentShipping')
+                'title' => $this->l('Warehouses'),
+                'parent_tab' => $parentTabId
             ),
             self::CONTROLLER_DELIVERY_COURIER => array(
-                'title' => $this->l('HRX Locations Courier'),
-                'parent_tab' => (int) Tab::getIdFromClassName('AdminParentShipping')
+                'title' => $this->l('Locations Courier'),
+                'parent_tab' => $parentTabId
             ),
             self::CONTROLLER_DELIVERY_TERMINAL => array(
-                'title' => $this->l('HRX Locations Terminal'),
-                'parent_tab' => (int) Tab::getIdFromClassName('AdminParentShipping')
+                'title' => $this->l('Locations Terminal'),
+                'parent_tab' => $parentTabId
             ),
             self::CONTROLLER_ADMIN_AJAX => array(
                 'title' => $this->l('HRX Terminals'),
@@ -921,10 +970,28 @@ class HrxDelivery extends CarrierModule
      */
     private function registerTabs()
     {
+        // Register parent tab first
+        $parentTabData = $this->getParentTab();
+        $parentTab = new Tab();
+        $parentTab->active = 1;
+        $parentTab->class_name = self::CONTROLLER_PARENT_TAB;
+        $parentTab->name = array();
+        $languages = Language::getLanguages(false);
+        foreach ($languages as $language) {
+            $parentTab->name[$language['id_lang']] = $parentTabData['title'];
+        }
+        $parentTab->id_parent = $parentTabData['parent_tab'];
+        $parentTab->module = $this->name;
+        if (!$parentTab->save()) {
+            $this->displayError($this->l('Error while creating tab ') . $parentTabData['title']);
+            return false;
+        }
+
+        // Register child tabs
         $tabs = $this->getModuleTabs();
 
         if (empty($tabs)) {
-            return true; // Nothing to register
+            return true;
         }
 
         foreach ($tabs as $controller => $tabData) {
@@ -932,7 +999,6 @@ class HrxDelivery extends CarrierModule
             $tab->active = 1;
             $tab->class_name = $controller;
             $tab->name = array();
-            $languages = Language::getLanguages(false);
 
             foreach ($languages as $language) {
                 $tab->name[$language['id_lang']] = $tabData['title'];
@@ -952,20 +1018,27 @@ class HrxDelivery extends CarrierModule
     {
         $tabs = $this->getModuleTabs();
 
-        if (empty($tabs)) {
-            return true; // Nothing to remove
-        }
-
+        // Delete child tabs first
         foreach (array_keys($tabs) as $controller) {
             $idTab = (int) Tab::getIdFromClassName($controller);
             $tab = new Tab((int) $idTab);
 
             if (!Validate::isLoadedObject($tab)) {
-                continue; // Nothing to remove
+                continue;
             }
 
             if (!$tab->delete()) {
                 $this->displayError($this->l('Error while uninstalling tab') . ' ' . $tab->name);
+                return false;
+            }
+        }
+
+        // Delete parent tab
+        $idParentTab = (int) Tab::getIdFromClassName(self::CONTROLLER_PARENT_TAB);
+        $parentTab = new Tab($idParentTab);
+        if (Validate::isLoadedObject($parentTab)) {
+            if (!$parentTab->delete()) {
+                $this->displayError($this->l('Error while uninstalling tab') . ' ' . $parentTab->name);
                 return false;
             }
         }
@@ -979,7 +1052,7 @@ class HrxDelivery extends CarrierModule
     public function deleteCarrier($key)
     {
         $carrier = new Carrier((int) (Configuration::get($key)));
-        if (!$carrier) {
+        if (!Validate::isLoadedObject($carrier)) {
             return true; // carrier doesnt exist, no further action needed
         }
 

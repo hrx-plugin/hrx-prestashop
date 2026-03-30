@@ -1,0 +1,21 @@
+/* HRX Delivery - Admin menu icon */
+#subtab-AdminHrxDelivery > a > .icon,
+#subtab-AdminHrxDelivery > a > i.material-icons {
+    display: none;
+}
+
+#subtab-AdminHrxDelivery > a > img {
+    display: none;
+}
+
+#subtab-AdminHrxDelivery > a::before {
+    content: '';
+    display: inline-block;
+    width: 1.4em;
+    height: 1.4em;
+    margin-right: 0.4em;
+    vertical-align: middle;
+    background-color: currentColor;
+    -webkit-mask: url('../img/logo-icon.svg') no-repeat center / contain;
+    mask: url('../img/logo-icon.svg') no-repeat center / contain;
+}

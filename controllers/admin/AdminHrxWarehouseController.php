@@ -71,6 +71,7 @@ class AdminHrxWarehouseController extends ModuleAdminController
             'href' => self::$currentIndex . '&sync_warehouses=1&token=' . $this->token,
             'desc' => $this->module->l('Update Warehouses'),
             'imgclass' => 'refresh',
+            'icon' => 'process-icon-refresh',
         ];
         
         parent::initPageHeaderToolbar();

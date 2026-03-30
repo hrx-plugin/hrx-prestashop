@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased 1.3.0]
+## [1.3.0] - Prestashop 8 support
 ### Improved
 - added use of address 2 field
 - added PrestaShop 8 support
